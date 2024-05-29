@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Card, CardContent } from "@/components/ui/card";
-import Autoplay from "embla-carousel-autoplay";
+//import Autoplay from "embla-carousel-autoplay";
 import {
   Carousel,
   CarouselContent,
