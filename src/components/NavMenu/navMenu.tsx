@@ -17,7 +17,7 @@ export const NavMenu: React.FC = () => {
   return (
     <Sheet>
       <SheetTrigger asChild>
-        <Button className="bg-zinc-950"><FaBars size={20}/></Button>
+        <Button className="bg-zinc-950"><FaBars size={20} /></Button>
       </SheetTrigger>
       <SheetContent className="bg-zinc-900 text-white w-128" side="left">
         <SheetHeader>
@@ -26,25 +26,39 @@ export const NavMenu: React.FC = () => {
             <nav>
               <ul className="space-y-4 mt-[10px]">
                 <li>
-                  <Link to="/" className="text-white hover:text-gray-300">Home</Link>
+                  <SheetClose asChild>
+                    <Link to="/" className="text-white hover:text-gray-300">Home</Link>
+                  </SheetClose>
                 </li>
                 <li>
-                  <Link to="/movies" className="text-white hover:text-gray-300">Movies</Link>
+                  <SheetClose asChild>
+                    <Link to="/movies" className="text-white hover:text-gray-300">Movies</Link>
+                  </SheetClose>
                 </li>
                 <li>
-                  <Link to="/series" className="text-white hover:text-gray-300">Series</Link>
+                  <SheetClose asChild>
+                    <Link to="/series" className="text-white hover:text-gray-300">Series</Link>
+                  </SheetClose>
                 </li>
                 <li>
-                  <Link to="/popular" className="text-white hover:text-gray-300">Popular Now</Link>
+                  <SheetClose asChild>
+                    <Link to="/popular" className="text-white hover:text-gray-300">Popular Now</Link>
+                  </SheetClose>
                 </li>
                 <li>
-                  <Link to="/toprated" className="text-white hover:text-gray-300">Top rated</Link>
+                  <SheetClose asChild>
+                    <Link to="/topRated" className="text-white hover:text-gray-300">Top rated</Link>
+                  </SheetClose>
                 </li>
                 <li>
-                  <Link to="/nowplaying" className="text-white hover:text-gray-300">Now playing/Airing</Link>
+                  <SheetClose asChild>
+                    <Link to="/nowPlaying" className="text-white hover:text-gray-300">Now playing/Airing</Link>
+                  </SheetClose>
                 </li>
                 <li>
-                  <Link to="/mylist" className="text-white hover:text-gray-300">My WatchList</Link>
+                  <SheetClose asChild>
+                    <Link to="/mylist" className="text-white hover:text-gray-300">My WatchList</Link>
+                  </SheetClose>
                 </li>
               </ul>
             </nav>

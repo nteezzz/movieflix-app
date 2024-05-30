@@ -1,4 +1,5 @@
-import * as React from "react";
+import React, { useEffect, useState } from 'react';
+import axios from 'axios';
 import { Card, CardContent } from "@/components/ui/card";
 import {
 Carousel,
@@ -10,6 +11,7 @@ CarouselPrevious,
 import Autoplay from "embla-carousel-autoplay";
 import StarRating from "../StarRating/starRating";
 import { Link } from "react-router-dom";
+import useGenres from '../Genres/useGenres';
 
 // Define the Movie interface
 interface Movie {
@@ -23,18 +25,50 @@ genre_ids: number[];
 vote_average: number;
 vote_count: number;
 }
-interface Genre {
-id: number;
-name: string;
-}
+interface Show{
+  id: number;
+  title: string;
+  backdrop_path: string;
+  poster_path: string;
+  overview: string;
+  release_date: string;
+  genre_ids: number[];
+  vote_average: number;
+  vote_count: number;
+  }
 
 // Define the props for HeroCarousel
 interface HeroCarouselProps {
-movies: Movie[];
-genres: Genre[];
-}
+movieURL: string;
+tvURL: string;
+} 
 
-export const HeroCarousel: React.FC<HeroCarouselProps> = ({ movies, genres }) => {
+export const HeroCarousel: React.FC<HeroCarouselProps> = ({movieURL, tvURL}) => {
+  const [movies, setMovies] = useState<Movie[]>([]);
+  const [shows, setShows] = useState<Show[]>([]);
+  const { genres, loading, error } = useGenres('movie');
+
+  useEffect(() => {
+    const fetchMovies = async () => {
+      try {
+        const response = await axios.get(movieURL);
+        setMovies(response.data.results);
+      } catch (error) {
+        console.error('Error fetching movies:', error);
+      }
+    };
+    const fetchShows = async () => {
+      try {
+        const response = await axios.get(tvURL);
+        setShows(response.data.results);
+      } catch (error) {
+        console.error('Error fetching shows:', error);
+      }
+    };
+    fetchMovies();
+    fetchShows();
+  }, []);
+
   const getGenreNames = (genreIds: number[]): string[] => {
   return genreIds.map((id) => {
   const genre = genres.find((genre) => genre.id === id);
