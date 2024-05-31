@@ -10,13 +10,15 @@ interface Genre {
 }
 
 interface UseGenresReturn {
-  genres: Genre[];
+  tvgenres: Genre[];
+  moviegenres: Genre[];
   loading: boolean;
   error: string | null;
 }
 
-const useGenres = (type: 'movie' | 'tv'): UseGenresReturn => {
-  const [genres, setGenres] = useState<Genre[]>([]);
+const useGenres = (): UseGenresReturn => {
+  const [tvgenres, setTvGenres] = useState<Genre[]>([]);
+  const [moviegenres, setMovieGenres] = useState<Genre[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -26,10 +28,15 @@ const useGenres = (type: 'movie' | 'tv'): UseGenresReturn => {
       setError(null);
 
       try {
-        const response = await axios.get(`${BASE_URL}/genre/${type}/list`, {
+        const movieresponse = await axios.get(`${BASE_URL}/genre/movie/list`, {
           params: { api_key: API_KEY, language: 'en-US' },
         });
-        setGenres(response.data.genres);
+        const tvresponse = await axios.get(`${BASE_URL}/genre/tv/list`, {
+          params: { api_key: API_KEY, language: 'en-US' },
+        });
+          setMovieGenres(movieresponse.data.genres);
+          setTvGenres(tvresponse.data.genres);
+
       } catch (err: any) {
         setError(err.message);
       }
@@ -38,9 +45,14 @@ const useGenres = (type: 'movie' | 'tv'): UseGenresReturn => {
     };
 
     fetchGenres();
-  }, [type]);
+  }, []);
 
-  return { genres, loading, error };
+  return {
+    tvgenres,
+    moviegenres,
+    loading,
+    error,
+  };
 };
 
 export default useGenres;

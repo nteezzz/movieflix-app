@@ -2,6 +2,7 @@ import React, { useEffect, useState, useMemo } from 'react';
 import { HeroCarousel } from '@/components/HeroCarousel/heroCarousel';
 import { ListCarousel } from '@/components/ListCarousel/listCarousel';
 
+
 interface CategoryPageProps {
   category: 'popular' | 'topRated' | 'nowPlaying';
 }
@@ -12,29 +13,32 @@ const CategoryPage: React.FC<CategoryPageProps> = ({ category }) => {
   const [loading, setLoading] = useState<boolean>(true);
 
   const apiKey = '8e3b0e2988fbbca50323caff26dfd237'; // Replace with your TMDb API key
-  const baseURL = 'https://api.themoviedb.org/3';
+  const baseURL = 'https://api.themoviedb.org/3'
 
   const urls = useMemo(() => {
-    let MOVIE_URL, TV_URL;
+    let MOVIE_URL, TV_URL, title;
 
     switch (category) {
       case 'popular':
         MOVIE_URL = `${baseURL}/movie/popular?api_key=${apiKey}&language=en-US&page=1`;
         TV_URL = `${baseURL}/tv/popular?api_key=${apiKey}&language=en-US&page=1`;
+        title='Popular ';
         break;
       case 'topRated':
         MOVIE_URL = `${baseURL}/movie/top_rated?api_key=${apiKey}&language=en-US&page=1`;
         TV_URL = `${baseURL}/tv/top_rated?api_key=${apiKey}&language=en-US&page=1`;
+        title='Top Rated ';
         break;
       case 'nowPlaying':
         MOVIE_URL = `${baseURL}/movie/now_playing?api_key=${apiKey}&language=en-US&page=1`;
         TV_URL = `${baseURL}/tv/on_the_air?api_key=${apiKey}&language=en-US&page=1`;
+        title=`Now Playing`;
         break;
       default:
         throw new Error('Invalid category');
     }
 
-    return { MOVIE_URL, TV_URL };
+    return { MOVIE_URL, TV_URL, title };
   }, [category]);
 
   useEffect(() => {
@@ -50,8 +54,8 @@ const CategoryPage: React.FC<CategoryPageProps> = ({ category }) => {
       ) : (
         <>
           <HeroCarousel movieURL={movieURL} tvURL={tvURL} />
-          <ListCarousel title={`${category} Movies`} URL={movieURL} />
-          <ListCarousel title={`${category} TV shows`} URL={tvURL} />
+          <ListCarousel title={`${urls.title} Movies`} URL={movieURL} />
+          <ListCarousel title={`${urls.title} TV shows`} URL={tvURL} />
         </>
       )}
     </div>
