@@ -1,6 +1,7 @@
 import React, { useEffect, useState, useMemo } from 'react';
 import { HeroCarousel } from '@/components/HeroCarousel/heroCarousel';
 import { ListCarousel } from '@/components/ListCarousel/listCarousel';
+import { API_KEY } from '@/config';
 
 
 interface CategoryPageProps {
@@ -12,7 +13,7 @@ const CategoryPage: React.FC<CategoryPageProps> = ({ category }) => {
   const [tvURL, setTvURL] = useState<string>('');
   const [loading, setLoading] = useState<boolean>(true);
 
-  const apiKey = '8e3b0e2988fbbca50323caff26dfd237'; // Replace with your TMDb API key
+
   const baseURL = 'https://api.themoviedb.org/3'
 
   const urls = useMemo(() => {
@@ -20,18 +21,18 @@ const CategoryPage: React.FC<CategoryPageProps> = ({ category }) => {
 
     switch (category) {
       case 'popular':
-        MOVIE_URL = `${baseURL}/movie/popular?api_key=${apiKey}&language=en-US&page=1`;
-        TV_URL = `${baseURL}/tv/popular?api_key=${apiKey}&language=en-US&page=1`;
+        MOVIE_URL = `${baseURL}/movie/popular?api_key=${API_KEY}&language=en-US&page=1`;
+        TV_URL = `${baseURL}/tv/popular?api_key=${API_KEY}&language=en-US&page=1`;
         title='Popular ';
         break;
       case 'topRated':
-        MOVIE_URL = `${baseURL}/movie/top_rated?api_key=${apiKey}&language=en-US&page=1`;
-        TV_URL = `${baseURL}/tv/top_rated?api_key=${apiKey}&language=en-US&page=1`;
+        MOVIE_URL = `${baseURL}/movie/top_rated?api_key=${API_KEY}&language=en-US&page=1`;
+        TV_URL = `${baseURL}/tv/top_rated?api_key=${API_KEY}&language=en-US&page=1`;
         title='Top Rated ';
         break;
       case 'nowPlaying':
-        MOVIE_URL = `${baseURL}/movie/now_playing?api_key=${apiKey}&language=en-US&page=1`;
-        TV_URL = `${baseURL}/tv/on_the_air?api_key=${apiKey}&language=en-US&page=1`;
+        MOVIE_URL = `${baseURL}/movie/now_playing?api_key=${API_KEY}&language=en-US&page=1`;
+        TV_URL = `${baseURL}/tv/on_the_air?api_key=${API_KEY}&language=en-US&page=1`;
         title=`Now Playing`;
         break;
       default:

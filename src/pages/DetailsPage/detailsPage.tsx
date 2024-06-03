@@ -3,6 +3,7 @@ import { useParams } from 'react-router-dom';
 import axios from 'axios';
 import { Card, CardContent } from "@/components/ui/card";
 import StarRating from "../../components/StarRating/starRating";
+import { API_KEY } from '@/config';
 
 interface Genre {
   id: number;
@@ -46,7 +47,7 @@ export const DetailsPage: React.FC = () => {
     const fetchDetails = async () => {
       try {
         const response = await axios.get(
-          `https://api.themoviedb.org/3/${isMovie ? 'movie' : 'tv'}/${id}?api_key=8e3b0e2988fbbca50323caff26dfd237`
+          `https://api.themoviedb.org/3/${isMovie ? 'movie' : 'tv'}/${id}?api_key=${API_KEY}`
         );
         const data = response.data;
         setItem({ ...data, type: isMovie ? 'movie' : 'show' });
@@ -75,7 +76,7 @@ export const DetailsPage: React.FC = () => {
             alt={item.type === 'movie' ? item.title : item.name}
             className="object-cover h-full w-full md:w-1/3"
           />
-          <div className="p-4 w-full md:w-2/3">
+          <div className="p-4 w-full text-left md:w-2/3">
             <h1 className="text-white font-bold text-2xl">
               {item.type === 'movie' ? item.title : item.name}{" "}
               {item.type === 'movie' ? 

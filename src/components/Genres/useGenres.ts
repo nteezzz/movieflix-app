@@ -1,7 +1,6 @@
 import { useState, useEffect } from 'react';
 import axios from 'axios';
-
-const API_KEY = '8e3b0e2988fbbca50323caff26dfd237';
+import { API_KEY } from '@/config';
 const BASE_URL = 'https://api.themoviedb.org/3';
 
 interface Genre {

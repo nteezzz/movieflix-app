@@ -12,8 +12,7 @@ import Autoplay from "embla-carousel-autoplay";
 import StarRating from "../StarRating/starRating";
 import { Link } from "react-router-dom";
 import useGenres from '../Genres/useGenres';
-
-
+import { API_KEY } from '@/config';
 
 interface Movie {
   id: number;
@@ -79,10 +78,10 @@ export const HeroCarousel: React.FC<HeroCarouselProps> = ({ movieURL, tvURL }) =
       const detailedItems = await Promise.all(
         items.map(async (item) => {
           if (item.type === 'movie') {
-            const response = await axios.get(`https://api.themoviedb.org/3/movie/${item.id}?api_key=8e3b0e2988fbbca50323caff26dfd237`);
+            const response = await axios.get(`https://api.themoviedb.org/3/movie/${item.id}?api_key=${API_KEY}`);
             return { ...item, runtime: response.data.runtime };
           } else {
-            const response = await axios.get(`https://api.themoviedb.org/3/tv/${item.id}?api_key=8e3b0e2988fbbca50323caff26dfd237`);
+            const response = await axios.get(`https://api.themoviedb.org/3/tv/${item.id}?api_key=${API_KEY}`);
             return { ...item, number_of_seasons: response.data.number_of_seasons };
           }
         })
@@ -125,50 +124,53 @@ export const HeroCarousel: React.FC<HeroCarouselProps> = ({ movieURL, tvURL }) =
 
   return (
     <div className="mt-[5px]">
-      <Carousel plugins={[Autoplay({ delay: 3000 })]}>
+      <Carousel plugins={[Autoplay({ delay: 5000})]}>
         <CarouselContent className="bg-zinc-950">
           {items.map((item) => (
             <CarouselItem key={item.id}>
-               <Link to={`/${item.type === 'movie' ? 'movies' : 'series'}/${item.id}`} className="text-red-600 hover:text-red-400">
-               <Card className="flex flex-row bg-zinc-950 border-zinc-900 mx-auto relative overflow-hidden">
-                <CardContent
-                  className="bg-cover bg-right flex aspect-auto w-3/4 relative h-96 xl:h-[400px] 2xl:h-[500px]"
-                  style={{
-                    backgroundImage: `url(https://image.tmdb.org/t/p/original${item.backdrop_path})`,
-                    backgroundSize: "cover",
-                    backgroundRepeat: "no-repeat",
-                  }}
-                >
-                  <div className="absolute inset-0 bg-gradient-to-r from-black to-transparent opacity-50" />
-                </CardContent>
-                <div className="flex flex-col justify-center bg-black bg-opacity-50 p-4 rounded max-w-3xl text-left w-1/4 z-10 relative">
-                  <h2 className="text-white font-semibold">
-                    {item.type === 'movie' ? item.title : item.name}{" "}
-                    {item.type === 'movie' ? 
-                      `(${item.release_date.substring(0, 4)})` : 
-                      `(${item.first_air_date.substring(0, 4)})`}
-                  </h2>
+              <Link to={`/${item.type === 'movie' ? 'movies' : 'series'}/${item.id}`} className="text-red-600 hover:text-red-400">
+              <Card className=" flex flex-row bg-black border-zinc-900 mx-auto relative overflow-hidden transition-transform transform hover:scale-105 hover:shadow-lg">
                   
-                  <div className="text-white mt-2">
-                    <StarRating rating={item.vote_average} count={item.vote_count} />
+                  <CardContent className='flex flex-row'>
+                  <div className="flex flex-col justify-center bg-black bg-opacity-50 p-4 rounded max-w-3xl text-left w-1/4 z-10 relative">
+                    <h2 className="text-white font-semibold">
+                      {item.type === 'movie' ? item.title : item.name}{" "}
+                      {item.type === 'movie' ? 
+                        `(${item.release_date.substring(0, 4)})` : 
+                        `(${item.first_air_date.substring(0, 4)})`}
+                    </h2>
+                    
+                    <div className="text-white mt-4">
+                      <StarRating rating={item.vote_average} count={item.vote_count} />
+                    </div>
+                    <div className="text-white mt-2">
+                      {item.type === 'movie' ? ` ${item.runtime} mins` : `${item.number_of_seasons} Seasons`}
+                    </div>
+                    <div className="text-white mt-2">
+                      {item.type === 'movie' ? getMovieGenres(item.genre_ids).join(", ") : getTVGenres(item.genre_ids).join(", ")}
+                    </div>
+                    
+                    <p className="text-white mt-2 hidden lg:block">
+                      {truncateOverview(item.overview, 25)}
+                      {item.overview.split(" ").length > 25 && (
+                        <Link to={`/${item.type === 'movie' ? 'movies' : 'series'}/${item.id}`} className="text-red-600 hover:text-red-400">read more</Link>
+                      )}
+                    </p>
+                    
                   </div>
-                  <div className="text-white mt-2">
-                    {item.type === 'movie' ? ` ${item.runtime} mins` : `${item.number_of_seasons} Seasons`}
-                  </div>
-                  <div className="text-white mt-2">
-                    {item.type === 'movie' ? getMovieGenres(item.genre_ids).join(", ") : getTVGenres(item.genre_ids).join(", ")}
+                  <div className="relative w-3/4 h-96 xl:h-[400px] 2xl:h-[500px]">
+                  <div className="absolute inset-0 bg-gradient-to-r from-black to-transparent" />                  
+                    <img
+                      className="object-cover w-full h-full"
+                      src={`https://image.tmdb.org/t/p/original${item.backdrop_path}`}
+                      
+                    />
+                    
                   </div>
                   
-                  <p className="text-white mt-2 hidden lg:block">
-                    {truncateOverview(item.overview, 30)}
-                    {item.overview.split(" ").length > 30 && (
-                      <Link to={`/${item.type === 'movie' ? 'movies' : 'series'}/${item.id}`} className="text-red-600 hover:text-red-400">read more</Link>
-                    )}
-                  </p>
-                </div>
-              </Card>
-               </Link>
-              
+                  </CardContent>
+                </Card>
+              </Link>
             </CarouselItem>
           ))}
         </CarouselContent>
