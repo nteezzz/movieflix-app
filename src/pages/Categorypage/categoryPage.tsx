@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useMemo } from 'react';
-import { HeroCarousel } from '@/components/HeroCarousel/heroCarousel';
-import { ListCarousel } from '@/components/ListCarousel/listCarousel';
+import { HeroCarousel } from '@/components/Carousels/HeroCarousel/heroCarousel';
+import { ListCarousel } from '@/components/Carousels/ListCarousel/listCarousel';
 import { API_KEY } from '@/config';
 
 

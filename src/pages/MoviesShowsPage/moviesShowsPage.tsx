@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { ListCarousel } from '@/components/ListCarousel/listCarousel';
+import { ListCarousel } from '@/components/Carousels/ListCarousel/listCarousel';
 import { API_KEY } from '@/config';
 
 interface MoviesShowsPageProps {

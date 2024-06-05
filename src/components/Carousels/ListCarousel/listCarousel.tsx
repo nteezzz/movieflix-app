@@ -9,6 +9,8 @@ import {
 } from "@/components/ui/carousel";
 import { Link } from "react-router-dom";
 import axios from 'axios';
+import { Button } from '../../ui/button';
+import { FaPlus } from 'react-icons/fa';
 
 // Define the props for ListCarousel
 interface ListCarouselProps {
@@ -82,6 +84,11 @@ export const ListCarousel: React.FC<ListCarouselProps> = ({ title, URL }) => {
     );
   };
 
+  const handleAddToWatchlist = (item: Item) => {
+    // Logic to add item to the watchlist
+    console.log('Added to watchlist:', item);
+  };
+
   return (
     <div className="mt-[5px]">
       <div className="flex text-lg m-[5px] justify-self-start">
@@ -97,7 +104,7 @@ export const ListCarousel: React.FC<ListCarouselProps> = ({ title, URL }) => {
         >
           {items.map((item) => (
             <CarouselItem key={item.id} style={{ flex: `0 0 ${100 / itemsPerPage}%` }}>
-              <div className="p-1">
+              <div className="relative p-1 group">
                 <Link to={`/${item.title ? 'movies' : 'series'}/${item.id}`}>
                   <Card className="bg-zinc-950 border-zinc-900">
                     <CardContent className="flex aspect-auto items-center justify-center p-2">
@@ -109,6 +116,12 @@ export const ListCarousel: React.FC<ListCarouselProps> = ({ title, URL }) => {
                     </CardContent>
                   </Card>
                 </Link>
+                <Button
+                  onClick={() => handleAddToWatchlist(item)}
+                  className="absolute h-[30px] bottom-2 right-2 transform bg-zinc-800 px-[8px] py-[8px] text-white opacity-0 group-hover:opacity-100 transition-opacity duration-300"
+                >
+                  <FaPlus />
+                </Button>
               </div>
             </CarouselItem>
           ))}

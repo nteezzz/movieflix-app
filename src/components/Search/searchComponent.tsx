@@ -9,7 +9,7 @@ import {
 } from "@/components/ui/dialog";
 import axios from "axios";
 import { useEffect, useState } from "react";
-import { FaBackward, FaSearch } from "react-icons/fa";
+import { FaBackward, FaPlus, FaSearch } from "react-icons/fa";
 import { Input } from "../ui/input";
 import { API_KEY } from "@/config";
 import Skeleton from 'react-loading-skeleton';
@@ -104,7 +104,8 @@ export const SearchComponent: React.FC = () => {
               <p className="text-white text-lg">Trending Now</p>
               <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
                 {trendingMovies.map((item) => (
-                  <Link to={`/movies/${item.id}`} key={item.id} onClick={()=>setDialogOpen(false)}>
+                  <div className="relative p-1 group">
+                    <Link to={`/movies/${item.id}`} key={item.id} onClick={()=>setDialogOpen(false)}>
                     <Card className="bg-zinc-950 border-zinc-900">
                       <CardContent className="flex aspect-auto items-center justify-center p-2">
                         <img
@@ -115,6 +116,16 @@ export const SearchComponent: React.FC = () => {
                       </CardContent>
                     </Card>
                   </Link>
+                  <Button
+                  // onClick={() => handleAddToWatchlist(item)}
+                  className="absolute h-[30px] bottom-2 right-2 transform bg-zinc-800 px-[8px] py-[8px] text-white opacity-0 group-hover:opacity-100 transition-opacity duration-300"
+                >
+                  <FaPlus />
+                  </Button>
+
+                  </div>
+                  
+                  
                 ))}
               </div>
             </>
@@ -125,7 +136,8 @@ export const SearchComponent: React.FC = () => {
               <p className="text-white text-lg">Search Results for {displayQuery}</p>
               <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
                 {results.map((item) => (
-                  <Link to={`/movies/${item.id}`} key={item.id} onClick={()=>setDialogOpen(false)}>
+                  <div className="relative p-1 group">
+                    <Link to={`/movies/${item.id}`} key={item.id} onClick={()=>setDialogOpen(false)}>
                     <Card className="bg-zinc-950 border-zinc-900">
                       <CardContent className="flex aspect-auto items-center justify-center p-2">
                         <img
@@ -136,6 +148,14 @@ export const SearchComponent: React.FC = () => {
                       </CardContent>
                     </Card>
                   </Link>
+                  <Button
+                  // onClick={() => handleAddToWatchlist(item)}
+                  className="absolute h-[30px] bottom-2 right-2 transform bg-zinc-800 px-[8px] py-[8px] text-white opacity-0 group-hover:opacity-100 transition-opacity duration-300"
+                >
+                  <FaPlus />
+                  </Button>
+                  </div>
+                  
                 ))}
               </div>
             </>

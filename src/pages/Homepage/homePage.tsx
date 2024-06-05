@@ -1,7 +1,7 @@
 // src/pages/HomePage/homePage.tsx
 import React from 'react';
-import { HeroCarousel } from '@/components/HeroCarousel/heroCarousel';
-import { ListCarousel } from '@/components/ListCarousel/listCarousel'
+import { HeroCarousel } from '@/components/Carousels/HeroCarousel/heroCarousel';
+import { ListCarousel } from '@/components/Carousels/ListCarousel/listCarousel'
 import { API_KEY } from '../../config';
 
 const MOVIE_URL = `https://api.themoviedb.org/3/movie/popular?api_key=${API_KEY}&language=en-US&page=1`;
