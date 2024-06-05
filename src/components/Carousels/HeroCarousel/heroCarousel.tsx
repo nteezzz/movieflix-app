@@ -15,6 +15,9 @@ import useGenres from '../../Genres/useGenres';
 import { API_KEY } from '@/config';
 import { Button } from '@/components/ui/button';
 import { FaPlus } from 'react-icons/fa';
+import { useDispatch, useSelector } from 'react-redux';
+import { AppDispatch, RootState } from '@/redux/app/store';
+import { addItemToFirestore } from '@/redux/slice/watchlistSlice';
 
 interface Movie {
   id: number;
@@ -43,6 +46,11 @@ interface Show {
   number_of_seasons?: number; // Optional property for number of seasons
   type: 'show';
 }
+interface WatchlistItem {
+  id: number;
+  title: string;
+  type: 'movie' | 'show';
+}
 
 interface HeroCarouselProps {
   movieURL: string;
@@ -52,6 +60,8 @@ interface HeroCarouselProps {
 export const HeroCarousel: React.FC<HeroCarouselProps> = ({ movieURL, tvURL }) => {
   const [items, setItems] = useState<(Movie | Show)[]>([]);
   const { moviegenres, tvgenres } = useGenres();
+  const dispatch= useDispatch<AppDispatch>();
+  const uid =useSelector((state: RootState) => state.auth.uid)
 
   useEffect(() => {
     const fetchMovies = async () => {
@@ -64,6 +74,7 @@ export const HeroCarousel: React.FC<HeroCarouselProps> = ({ movieURL, tvURL }) =
         return [];
       }
     };
+    
 
     const fetchShows = async () => {
       try {
@@ -75,6 +86,7 @@ export const HeroCarousel: React.FC<HeroCarouselProps> = ({ movieURL, tvURL }) =
         return [];
       }
     };
+    
 
     const fetchDetails = async (items: (Movie | Show)[]) => {
       const detailedItems = await Promise.all(
@@ -122,6 +134,10 @@ export const HeroCarousel: React.FC<HeroCarouselProps> = ({ movieURL, tvURL }) =
     } else {
       return overview;
     }
+  };
+  const handleAddToWatchList=(item: WatchlistItem)=>{
+  const userId = uid || ""; 
+  dispatch(addItemToFirestore({ userId, item }));
   };
 
   return (
@@ -173,7 +189,9 @@ export const HeroCarousel: React.FC<HeroCarouselProps> = ({ movieURL, tvURL }) =
                   </CardContent>
                   </Link>
                   <Button
-                    // onClick={() => handleAddToWatchlist(item)}
+                    onClick={() =>handleAddToWatchList({id: item.id,
+                   title: 'title' in item ? item.title : 'name' in item ? item.name : '', 
+                      type: item.type}) }
                     className="absolute h-[30px] bottom-2 right-2 transform bg-zinc-800 px-[8px] py-[8px] pr-10 text-white opacity-0 group-hover:opacity-100 transition-opacity duration-300"
                   >
                     <FaPlus className="mr-2" /> Add to Watchlist

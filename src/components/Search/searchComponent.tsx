@@ -14,21 +14,29 @@ import { Input } from "../ui/input";
 import { API_KEY } from "@/config";
 import Skeleton from 'react-loading-skeleton';
 import 'react-loading-skeleton/dist/skeleton.css';
+import { useDispatch, useSelector } from "react-redux";
+import { AppDispatch, RootState } from "@/redux/app/store";
+import { addItemToFirestore } from '@/redux/slice/watchlistSlice';
 
 
-interface Movie {
+interface Media {
   id: number;
-  title: string;
+  original_name?: string;
+  original_title?:string;
   poster_path: string;
+  media_type: string;
 }
 
 export const SearchComponent: React.FC = () => {
   const [query, setQuery] = useState<string>('');
-  const [results, setResults] = useState<Movie[]>([]);
-  const [trendingMovies, setTrendingMovies] = useState<Movie[]>([]);
+  const [results, setResults] = useState<Media[]>([]);
+  const [trendingMovies, setTrendingMovies] = useState<Media[]>([]);
   const [loading, setLoading] = useState<boolean>(false);
   const [displayQuery, setDisplayQuery] = useState<string>('');
   const [dialogOpen, setDialogOpen] = useState<boolean>(false);
+  const dispatch= useDispatch<AppDispatch>();
+  const uid =useSelector((state: RootState) => state.auth.uid)
+
 
   useEffect(() => {
     const fetchTrendingMovies = async () => {
@@ -53,7 +61,7 @@ export const SearchComponent: React.FC = () => {
 
     setLoading(true);
     try {
-      const response = await axios.get(`https://api.themoviedb.org/3/search/movie?api_key=${API_KEY}&query=${query}`);
+      const response = await axios.get(`https://api.themoviedb.org/3/search/multi?api_key=${API_KEY}&query=${query}`);
       setResults(response.data.results);
     } catch (error) {
       console.error('Error searching movies:', error);
@@ -62,6 +70,13 @@ export const SearchComponent: React.FC = () => {
       setLoading(false);
     }
   };
+  const handleAddToWatchlist = (item: Media) => {
+    const userId = uid || ""; 
+    const itemType = item.media_type === 'movie' ? 'movie' : 'show';
+    const itemTitle = item.media_type === 'movie' ? (item.original_title || '') : (item.original_name || ''); 
+    dispatch(addItemToFirestore({ userId, item: { id: item.id, title: itemTitle, type: itemType } }));
+  };
+  
   
 
   return (
@@ -110,14 +125,14 @@ export const SearchComponent: React.FC = () => {
                       <CardContent className="flex aspect-auto items-center justify-center p-2">
                         <img
                           src={`https://image.tmdb.org/t/p/w500${item.poster_path}`}
-                          alt={item.title}
+                          alt={item.original_name}
                           className="object-cover h-full w-full"
                         />
                       </CardContent>
                     </Card>
                   </Link>
                   <Button
-                  // onClick={() => handleAddToWatchlist(item)}
+                  onClick={() => handleAddToWatchlist(item)}
                   className="absolute h-[30px] bottom-2 right-2 transform bg-zinc-800 px-[8px] py-[8px] text-white opacity-0 group-hover:opacity-100 transition-opacity duration-300"
                 >
                   <FaPlus />
@@ -137,19 +152,19 @@ export const SearchComponent: React.FC = () => {
               <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
                 {results.map((item) => (
                   <div className="relative p-1 group">
-                    <Link to={`/movies/${item.id}`} key={item.id} onClick={()=>setDialogOpen(false)}>
+                    <Link to={`/${item.media_type=='movie'?'movies':'series'}/${item.id}`} key={item.id} onClick={()=>setDialogOpen(false)}>
                     <Card className="bg-zinc-950 border-zinc-900">
                       <CardContent className="flex aspect-auto items-center justify-center p-2">
                         <img
                           src={`https://image.tmdb.org/t/p/w500${item.poster_path}`}
-                          alt={item.title}
+                          alt={item.original_name}
                           className="object-cover h-full w-full"
                         />
                       </CardContent>
                     </Card>
                   </Link>
                   <Button
-                  // onClick={() => handleAddToWatchlist(item)}
+                  onClick={() => handleAddToWatchlist(item)}
                   className="absolute h-[30px] bottom-2 right-2 transform bg-zinc-800 px-[8px] py-[8px] text-white opacity-0 group-hover:opacity-100 transition-opacity duration-300"
                 >
                   <FaPlus />

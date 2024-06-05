@@ -12,8 +12,13 @@ import {
   SheetTrigger,
 } from "@/components/ui/sheet";
 import { FaBars } from "react-icons/fa";
+import AuthComponent from '../AuthComponent/authComponent';
+import { useSelector } from 'react-redux';
+import { RootState } from '@/redux/app/store';
 
 export const NavMenu: React.FC = () => {
+
+  const auth= useSelector((state: RootState) => state.auth);
   return (
     <Sheet>
       <SheetTrigger asChild>
@@ -57,11 +62,15 @@ export const NavMenu: React.FC = () => {
                 </li>
                 <li>
                   <SheetClose asChild>
-                    <Link to="/mylist" className="text-white hover:text-gray-300">My WatchList</Link>
+                    {auth.email&&(<Link to="/mylist" className="text-white hover:text-gray-300">My WatchList</Link>)}
                   </SheetClose>
                 </li>
               </ul>
             </nav>
+            <div>
+            <AuthComponent/>
+            </div>
+            
           </SheetDescription>
         </SheetHeader>
         <SheetFooter>

@@ -11,6 +11,9 @@ import { Link } from "react-router-dom";
 import axios from 'axios';
 import { Button } from '../../ui/button';
 import { FaPlus } from 'react-icons/fa';
+import { addItemToFirestore } from '@/redux/slice/watchlistSlice';
+import { useDispatch, useSelector } from 'react-redux';
+import { AppDispatch, RootState } from '@/redux/app/store';
 
 // Define the props for ListCarousel
 interface ListCarouselProps {
@@ -19,10 +22,13 @@ interface ListCarouselProps {
 }
 interface Item {
   id: number;
-  title: string;
+  title?: string;
   poster_path: string;
   overview: string;
+  name?: string; // Add optional name property for TV series
+  type: 'movie' | 'show';
 }
+
 
 export const ListCarousel: React.FC<ListCarouselProps> = ({ title, URL }) => {
   const [items, setItems] = useState<Item[]>([]);
@@ -30,18 +36,20 @@ export const ListCarousel: React.FC<ListCarouselProps> = ({ title, URL }) => {
   const [itemsPerPage, setItemsPerPage] = useState<number>(6); // Default value for large screens
   const [currentPage, setCurrentPage] = useState<number>(1);
   const [totalPages, setTotalPages] = useState<number>(1);
+  const dispatch= useDispatch<AppDispatch>();
+  const uid =useSelector((state: RootState) => state.auth.uid)
 
   useEffect(() => {
-    const fetchMovies = async (page: number) => {
+    const fetchItems = async (page: number) => {
       try {
         const response = await axios.get(`${URL}&page=${page}`);
         setItems((prevItems) => [...prevItems, ...response.data.results]);
         setTotalPages(response.data.total_pages);
       } catch (error) {
-        console.error('Error fetching movies:', error);
+        console.error('Error fetching items:', error);
       }
     };
-    fetchMovies(currentPage);
+    fetchItems(currentPage);
   }, [URL, currentPage]);
 
   const updateItemsPerPage = () => {
@@ -84,9 +92,11 @@ export const ListCarousel: React.FC<ListCarouselProps> = ({ title, URL }) => {
     );
   };
 
-  const handleAddToWatchlist = (item: Item) => {
-    // Logic to add item to the watchlist
-    console.log('Added to watchlist:', item);
+  const handleAddToWatchList = (item: Item) => {
+    const userId = uid || ""; 
+    const itemType = 'title' in item ? 'movie' : 'show'; // Check if it's a movie or TV series
+    const itemTitle = itemType=='movie' ?(item.title || ' '):(item.name || ' ');  // Get the title based on the item type
+    dispatch(addItemToFirestore({ userId, item: { id: item.id, title: itemTitle, type: itemType } }));
   };
 
   return (
@@ -117,7 +127,7 @@ export const ListCarousel: React.FC<ListCarouselProps> = ({ title, URL }) => {
                   </Card>
                 </Link>
                 <Button
-                  onClick={() => handleAddToWatchlist(item)}
+                 onClick={() => handleAddToWatchList(item) }
                   className="absolute h-[30px] bottom-2 right-2 transform bg-zinc-800 px-[8px] py-[8px] text-white opacity-0 group-hover:opacity-100 transition-opacity duration-300"
                 >
                   <FaPlus />
