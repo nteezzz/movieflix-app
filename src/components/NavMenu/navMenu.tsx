@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
 import {
@@ -6,27 +6,35 @@ import {
   SheetClose,
   SheetContent,
   SheetDescription,
-  SheetFooter,
   SheetHeader,
   SheetTitle,
   SheetTrigger,
 } from "@/components/ui/sheet";
 import { FaBars } from "react-icons/fa";
 import AuthComponent from '../AuthComponent/authComponent';
-import { useSelector } from 'react-redux';
-import { RootState } from '@/redux/app/store';
+import { onAuthStateChanged } from 'firebase/auth';
+import { auth } from '@/config/firebase-config';
 
 export const NavMenu: React.FC = () => {
-  const auth = useSelector((state: RootState) => state.auth);
+  const [currentUser, setCurrentUser] = useState<any>(null);
+
+  useEffect(() => {
+    const unsubscribe = onAuthStateChanged(auth, (user) => {
+      setCurrentUser(user ? user : null);
+    });
+    return () => unsubscribe();
+  }, []);
 
   return (
     <Sheet>
       <SheetTrigger asChild>
         <Button className="bg-zinc-950"><FaBars size={20} /></Button>
       </SheetTrigger>
-      <SheetContent className="bg-zinc-900 text-white lg:w-1/4 md:w-1/3 sm:w-full" side="left">
-        <SheetHeader>
-          <SheetTitle className="bg-zinc-900 text-2xl mt-[10px] text-white">NteezFlix</SheetTitle>
+      <SheetContent className="bg-zinc-900 text-white lg:w-1/4 md:w-1/3 sm:w-full flex flex-col" side={'left'}>
+        <div className="flex-grow">
+          <SheetHeader>
+            <SheetTitle className="bg-zinc-900 text-2xl mt-[10px] text-white">NteezFlix</SheetTitle>
+          </SheetHeader>
           <SheetDescription>
             <nav>
               <ul className="space-y-4 mt-[10px]">
@@ -60,22 +68,20 @@ export const NavMenu: React.FC = () => {
                     <Link to="/nowPlaying" className="text-white hover:text-gray-300">Now playing/Airing</Link>
                   </SheetClose>
                 </li>
-                <li>
-                  <SheetClose asChild>
-                    <Link to="/mylist" className={`text-white hover:text-gray-300 ${auth.email ? '' : 'hidden'}`}>My WatchList</Link>
-                  </SheetClose>
-                </li>
+                {currentUser && currentUser.email && (
+                  <li>
+                    <SheetClose asChild>
+                      <Link to="/mylist" className="text-white hover:text-gray-300">My WatchList</Link>
+                    </SheetClose>
+                  </li>
+                )}
               </ul>
             </nav>
-            <div>
-              <AuthComponent />
-            </div>
           </SheetDescription>
-        </SheetHeader>
-        <SheetFooter>
-          <SheetClose asChild>
-          </SheetClose>
-        </SheetFooter>
+        </div>
+        <div className="mt-auto">
+          <AuthComponent />
+        </div>
       </SheetContent>
     </Sheet>
   );

@@ -26,6 +26,7 @@ const AuthComponent: React.FC = () => {
   const [isRegistering, setIsRegistering] = useState<boolean>(false);
   const [currentUser, setCurrentUser] = useState<any>(null);
   const dispatch = useDispatch<AppDispatch>();
+  const [dialogOpen, setDialogOpen] = useState<boolean>(false);
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (user) => {
@@ -35,7 +36,6 @@ const AuthComponent: React.FC = () => {
         setCurrentUser(null);
       }
     });
-
     return () => unsubscribe();
   }, []);
 
@@ -50,6 +50,7 @@ const AuthComponent: React.FC = () => {
       if (email && uid) {
         dispatch(setLogin({ uid, email }));
         dispatch(fetchWatchlist(uid));
+        setDialogOpen(false)
       }
     } catch (error: any) {
       if (error.code === 'auth/network-request-failed') {
@@ -73,6 +74,7 @@ const AuthComponent: React.FC = () => {
         dispatch(fetchWatchlist(uid));
       }
       console.log(userCredential.user);
+      setDialogOpen(false)
     } catch (error: any) {
       if (error.code === 'auth/network-request-failed') {
         alert("Network error: Please check your internet connection and try again.");
@@ -95,6 +97,7 @@ const AuthComponent: React.FC = () => {
 
   const handleGuest = () => {
     alert("Dear guest user, all your data will be lost once the browser is closed/refreshed");
+    setDialogOpen(false)
   };
 
   return (
@@ -107,9 +110,9 @@ const AuthComponent: React.FC = () => {
           </Button>
         </div>
       ) : (
-        <Dialog>
+        <Dialog open={dialogOpen}>
         <DialogTrigger asChild>
-          <Button>Login to Your Account</Button>
+          <Button onClick={()=>setDialogOpen(true)}>Login to Your Account</Button>
         </DialogTrigger>
         <DialogContent className="border-custom-red bg-zinc-900 text-white sm:max-w-[425px]">
           <DialogHeader>

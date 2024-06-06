@@ -5,6 +5,11 @@ import { Card, CardContent} from "@/components/ui/card";
 import StarRating from "../../components/StarRating/starRating";
 import { API_KEY } from '@/config';
 import { CastCarousel } from '../../components/Carousels/CastCarousel/castCarousel';
+import { Button } from '@/components/ui/button';
+import { addItemToFirestore } from '@/redux/slice/watchlistSlice';
+import { useDispatch, useSelector } from 'react-redux';
+import { AppDispatch, RootState } from '@/redux/app/store';
+import { FaPlus } from 'react-icons/fa';
 
 interface Genre {
   id: number;
@@ -62,11 +67,19 @@ interface Crew {
   name: string;
   job: string;
 }
+interface WatchlistItem {
+  id: number;
+  title: string;
+  type: 'movie' | 'show';
+}
+
 
 export const DetailsPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const [item, setItem] = useState<Movie | Show | null>(null);
   const isMovie = window.location.pathname.includes('/movies/');
+  const dispatch= useDispatch<AppDispatch>();
+  const uid =useSelector((state: RootState) => state.auth.uid)
 
   useEffect(() => {
     const fetchDetails = async () => {
@@ -92,6 +105,10 @@ export const DetailsPage: React.FC = () => {
     const member = crew.find((person) => person.job === job);
     return member ? member.name : 'Unknown';
   };
+  const handleAddToWatchList=(item: WatchlistItem)=>{
+    const userId = uid || ""; 
+    dispatch(addItemToFirestore({ userId, item }));
+    };
 
   if (!item) {
     return <div>Loading...</div>;
@@ -101,8 +118,6 @@ export const DetailsPage: React.FC = () => {
     <div className="container mx-auto p-4">
       <Card className="bg-zinc-950 border-zinc-900 mx-auto mb-6 max-w-6xl">
         <CardContent className="flex flex-col md:flex-row">
-          
-          
           <img
             src={`https://image.tmdb.org/t/p/w500${item.poster_path}`}
             alt={item.type === 'movie' ? item.title : item.name}
@@ -119,6 +134,7 @@ export const DetailsPage: React.FC = () => {
             <div className="text-white mt-2">
               <StarRating rating={item.vote_average} count={item.vote_count} />
             </div>
+            
             <div className="text-white mt-2">
               {item.type === 'movie' ? `${item.runtime} mins` : `${item.number_of_seasons} Seasons`}
             </div>
@@ -146,6 +162,14 @@ export const DetailsPage: React.FC = () => {
             <div className="text-white mt-2">
               Music: {getCrewMember(item.credits.crew, 'Original Music Composer')}
             </div>
+            <Button
+                    onClick={() =>handleAddToWatchList({id: item.id,
+                   title: 'title' in item ? item.title : 'name' in item ? item.name : '', 
+                      type: item.type}) }
+                    className="h-[30px] mt-[10px] transform bg-zinc-800 px-[8px] py-[8px] pr-10 text-white "
+                  >
+                    <FaPlus className="mr-2" /> Add to Watchlist
+            </Button>
           </div>
         </CardContent>
       </Card>
