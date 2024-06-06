@@ -1,0 +1,29 @@
+.card-container {
+    perspective: 1000px; /* Add perspective for 3D effect */
+  }
+  
+  .card-hover {
+    transition: transform 0.3s ease, box-shadow 0.3s ease, filter 0.3s ease;
+  }
+  
+  .card-hover:hover {
+    transform: scale(1.03) rotateY(3deg); /* Slightly scale up and rotate the card */
+    border-color: #db1000;
+  }
+  .custom-scrollbar::-webkit-scrollbar {
+    width: 12px;
+  }
+  
+  .custom-scrollbar::-webkit-scrollbar-track {
+    background: #1c1c1e;
+    border-radius: 10px;
+  }
+  
+  .custom-scrollbar::-webkit-scrollbar-thumb {
+    background-color: #3a3a3c;
+    border-radius: 10px;
+    border: 3px solid #1c1c1e;
+  }
+  
+  .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+    background-color: #525254;}

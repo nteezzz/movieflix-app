@@ -18,6 +18,12 @@ module.exports = {
     },
     extend: {
       colors: {
+        'custom-red': '#db1000',
+      },
+      borderColor: {
+        'custom-red': '#db1000',
+      },
+      colors: {
         border: "hsl(var(--border))",
         input: "hsl(var(--input))",
         ring: "hsl(var(--ring))",

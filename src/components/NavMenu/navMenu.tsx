@@ -17,14 +17,14 @@ import { useSelector } from 'react-redux';
 import { RootState } from '@/redux/app/store';
 
 export const NavMenu: React.FC = () => {
+  const auth = useSelector((state: RootState) => state.auth);
 
-  const auth= useSelector((state: RootState) => state.auth);
   return (
     <Sheet>
       <SheetTrigger asChild>
         <Button className="bg-zinc-950"><FaBars size={20} /></Button>
       </SheetTrigger>
-      <SheetContent className="bg-zinc-900 text-white w-128" side="left">
+      <SheetContent className="bg-zinc-900 text-white lg:w-1/4 md:w-1/3 sm:w-full" side="left">
         <SheetHeader>
           <SheetTitle className="bg-zinc-900 text-2xl mt-[10px] text-white">NteezFlix</SheetTitle>
           <SheetDescription>
@@ -62,15 +62,14 @@ export const NavMenu: React.FC = () => {
                 </li>
                 <li>
                   <SheetClose asChild>
-                    {auth.email&&(<Link to="/mylist" className="text-white hover:text-gray-300">My WatchList</Link>)}
+                    <Link to="/mylist" className={`text-white hover:text-gray-300 ${auth.email ? '' : 'hidden'}`}>My WatchList</Link>
                   </SheetClose>
                 </li>
               </ul>
             </nav>
             <div>
-            <AuthComponent/>
+              <AuthComponent />
             </div>
-            
           </SheetDescription>
         </SheetHeader>
         <SheetFooter>

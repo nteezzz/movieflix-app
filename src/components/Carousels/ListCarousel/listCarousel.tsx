@@ -14,8 +14,9 @@ import { FaPlus } from 'react-icons/fa';
 import { addItemToFirestore } from '@/redux/slice/watchlistSlice';
 import { useDispatch, useSelector } from 'react-redux';
 import { AppDispatch, RootState } from '@/redux/app/store';
+import '../carousel.css'
 
-// Define the props for ListCarousel
+
 interface ListCarouselProps {
   title: string;
   URL: string;
@@ -25,7 +26,7 @@ interface Item {
   title?: string;
   poster_path: string;
   overview: string;
-  name?: string; // Add optional name property for TV series
+  name?: string; 
   type: 'movie' | 'show';
 }
 
@@ -33,7 +34,7 @@ interface Item {
 export const ListCarousel: React.FC<ListCarouselProps> = ({ title, URL }) => {
   const [items, setItems] = useState<Item[]>([]);
   const [scrollIndex, setScrollIndex] = useState<number>(0);
-  const [itemsPerPage, setItemsPerPage] = useState<number>(6); // Default value for large screens
+  const [itemsPerPage, setItemsPerPage] = useState<number>(6); 
   const [currentPage, setCurrentPage] = useState<number>(1);
   const [totalPages, setTotalPages] = useState<number>(1);
   const dispatch= useDispatch<AppDispatch>();
@@ -114,21 +115,21 @@ export const ListCarousel: React.FC<ListCarouselProps> = ({ title, URL }) => {
         >
           {items.map((item) => (
             <CarouselItem key={item.id} style={{ flex: `0 0 ${100 / itemsPerPage}%` }}>
-              <div className="relative p-1 group">
+              <div className="relative p-1 group card-container ">
                 <Link to={`/${item.title ? 'movies' : 'series'}/${item.id}`}>
-                  <Card className="bg-zinc-950 border-zinc-900">
-                    <CardContent className="flex aspect-auto items-center justify-center p-2">
+                  <Card className="bg-zinc-950 border-zinc-900 card-hover">
+                    <CardContent className="flex aspect-auto items-center justify-center ">
                       <img
                         src={`https://image.tmdb.org/t/p/w500${item.poster_path}`}
                         alt={item.title}
-                        className="object-cover h-full w-full"
+                        className="object-cover h-full w-full rounded-md"
                       />
                     </CardContent>
                   </Card>
                 </Link>
                 <Button
                  onClick={() => handleAddToWatchList(item) }
-                  className="absolute h-[30px] bottom-2 right-2 transform bg-zinc-800 px-[8px] py-[8px] text-white opacity-0 group-hover:opacity-100 transition-opacity duration-300"
+                  className="absolute h-[30px] bottom-2 right-2 transform bg-zinc-800 px-[8px] py-[8px] text-white lg:opacity-0 group-hover:opacity-100 transition-opacity duration-300"
                 >
                   <FaPlus />
                 </Button>
