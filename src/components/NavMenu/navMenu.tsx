@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
 import {
@@ -12,18 +12,13 @@ import {
 } from "@/components/ui/sheet";
 import { FaBars } from "react-icons/fa";
 import AuthComponent from '../AuthComponent/authComponent';
-import { onAuthStateChanged } from 'firebase/auth';
-import { auth } from '@/config/firebase-config';
+import { useSelector } from 'react-redux';
+import { RootState } from '@/redux/app/store';
+
+
 
 export const NavMenu: React.FC = () => {
-  const [currentUser, setCurrentUser] = useState<any>(null);
-
-  useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, (user) => {
-      setCurrentUser(user ? user : null);
-    });
-    return () => unsubscribe();
-  }, []);
+  const auth=useSelector((state: RootState) => state.auth.uid)
 
   return (
     <Sheet>
@@ -68,10 +63,10 @@ export const NavMenu: React.FC = () => {
                     <Link to="/nowPlaying" className="text-white hover:text-gray-300">Now playing/Airing</Link>
                   </SheetClose>
                 </li>
-                {currentUser && currentUser.email && (
+                {auth && (
                   <li>
                     <SheetClose asChild>
-                      <Link to="/mylist" className="text-white hover:text-gray-300">My WatchList</Link>
+                      <Link to="/myWatchlist" className="text-white hover:text-gray-300">My WatchList</Link>
                     </SheetClose>
                   </li>
                 )}

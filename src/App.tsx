@@ -6,6 +6,7 @@ import { HomePage } from './pages/Homepage/homePage';
 import CategoryPage from './pages/Categorypage/categoryPage';
 import MoviesShowsPage from './pages/MoviesShowsPage/moviesShowsPage';
 import { DetailsPage } from './pages/DetailsPage/detailsPage';
+import MyWatchlist from './pages/MyWishlist/myWishlist';
 
 const App: React.FC = () => {
   return (
@@ -20,6 +21,7 @@ const App: React.FC = () => {
         <Route path="/popular" element={<CategoryPage category='popular'/>} />
         <Route path="/topRated" element={<CategoryPage category='topRated'/>} />
         <Route path="/nowPlaying" element={<CategoryPage category='nowPlaying'/>} />
+        <Route path="/myWatchlist" element={<MyWatchlist/>} />
       </Routes>
     </Router>
   );

@@ -18,6 +18,7 @@ import { FaPlus } from 'react-icons/fa';
 import { useDispatch, useSelector } from 'react-redux';
 import { AppDispatch, RootState } from '@/redux/app/store';
 import { addItemToFirestore } from '@/redux/slice/watchlistSlice';
+import { Skeleton } from "@/components/ui/skeleton";
 
 interface Movie {
   id: number;
@@ -59,9 +60,10 @@ interface HeroCarouselProps {
 
 export const HeroCarousel: React.FC<HeroCarouselProps> = ({ movieURL, tvURL }) => {
   const [items, setItems] = useState<(Movie | Show)[]>([]);
+  const [loading, setLoading] = useState(true); // Loading state
   const { moviegenres, tvgenres } = useGenres();
-  const dispatch= useDispatch<AppDispatch>();
-  const uid =useSelector((state: RootState) => state.auth.uid)
+  const dispatch = useDispatch<AppDispatch>();
+  const uid = useSelector((state: RootState) => state.auth.uid);
 
   useEffect(() => {
     const fetchMovies = async () => {
@@ -74,7 +76,6 @@ export const HeroCarousel: React.FC<HeroCarouselProps> = ({ movieURL, tvURL }) =
         return [];
       }
     };
-    
 
     const fetchShows = async () => {
       try {
@@ -86,7 +87,6 @@ export const HeroCarousel: React.FC<HeroCarouselProps> = ({ movieURL, tvURL }) =
         return [];
       }
     };
-    
 
     const fetchDetails = async (items: (Movie | Show)[]) => {
       const detailedItems = await Promise.all(
@@ -101,9 +101,11 @@ export const HeroCarousel: React.FC<HeroCarouselProps> = ({ movieURL, tvURL }) =
         })
       );
       setItems(detailedItems);
+      setLoading(false); // Set loading to false once data is loaded
     };
 
     const fetchData = async () => {
+      setLoading(true); // Set loading to true while fetching data
       const movies = await fetchMovies();
       const shows = await fetchShows();
       const combined = [...movies, ...shows];
@@ -135,71 +137,89 @@ export const HeroCarousel: React.FC<HeroCarouselProps> = ({ movieURL, tvURL }) =
       return overview;
     }
   };
-  const handleAddToWatchList=(item: WatchlistItem)=>{
-  const userId = uid || ""; 
-  dispatch(addItemToFirestore({ userId, item }));
+
+  const handleAddToWatchList = (item: WatchlistItem) => {
+    const userId = uid || "";
+    dispatch(addItemToFirestore({ userId, item }));
   };
 
   return (
     <div className="mt-[5px]">
       <Carousel plugins={[Autoplay({ delay: 5000 })]}>
         <CarouselContent className="bg-zinc-950">
-          {items.map((item) => (
-            <CarouselItem key={item.id} className="group">
-              
+          {loading ? (
+            Array.from({ length: 3 }).map((_, index) => (
+              <CarouselItem key={index} className="group h-96 xl:h-[400px] 2xl:h-[500px]">
                 <Card className="flex flex-row bg-black border-zinc-900 mx-auto relative overflow-hidden transition-transform transform hover:scale-105 hover:shadow-lg">
-                <Link to={`/${item.type === 'movie' ? 'movies' : 'series'}/${item.id}`} className="text-red-600 hover:text-red-400">
                   <CardContent className="flex flex-row">
                     <div className="flex flex-col justify-center bg-black bg-opacity-50 p-4 pl-10 rounded max-w-3xl text-left w-1/4 z-10 relative">
-                      <h2 className="text-white font-semibold">
-                        {item.type === 'movie' ? item.title : item.name}{" "}
-                        {item.type === 'movie'
-                          ? `(${item.release_date.substring(0, 4)})`
-                          : `(${item.first_air_date.substring(0, 4)})`}
-                      </h2>
-
-                      <div className="text-white mt-4">
-                        <StarRating rating={item.vote_average} count={item.vote_count} />
-                      </div>
-                      <div className="text-white mt-2">
-                        {item.type === 'movie' ? `${item.runtime} mins` : `${item.number_of_seasons} Seasons`}
-                      </div>
-                      <div className="text-white mt-2">
-                        {item.type === 'movie'
-                          ? getMovieGenres(item.genre_ids).join(", ")
-                          : getTVGenres(item.genre_ids).join(", ")}
-                      </div>
-
-                      <p className="text-white mt-2 hidden lg:block">
-                        {truncateOverview(item.overview, 25)}
-                        {item.overview.split(" ").length > 25 && (
-                          <Link to={`/${item.type === 'movie' ? 'movies' : 'series'}/${item.id}`} className="text-red-600 hover:text-red-400">read more</Link>
-                        )}
-                      </p>
-
+                      <Skeleton className="h-6 w-3/4 mb-4 animate-pulse" />
+                      <Skeleton className="h-4 w-1/2 mb-2 animate-pulse" />
+                      <Skeleton className="h-4 w-1/4 mb-2 animate-pulse" />
+                      <Skeleton className="h-4 w-3/4 mb-2 animate-pulse" />
+                      <Skeleton className="h-4 w-1/2 mb-2 animate-pulse" />
                     </div>
                     <div className="relative w-3/4 h-96 xl:h-[400px] 2xl:h-[500px]">
-                      <div className="absolute inset-0 bg-gradient-to-r from-black to-transparent" />
-                      <img
-                        className="object-cover w-full h-full"
-                        src={`https://image.tmdb.org/t/p/original${item.backdrop_path}`}
-                      />
+                      <Skeleton className="object-cover w-full h-full animate-pulse" />
                     </div>
-
                   </CardContent>
+                </Card>
+              </CarouselItem>
+            ))
+          ) : (
+            items.map((item) => (
+              <CarouselItem key={item.id} className="group h-96 xl:h-[400px] 2xl:h-[500px]">
+                <Card className="flex flex-row bg-black border-zinc-900 mx-auto relative overflow-hidden transition-transform transform hover:scale-105 hover:shadow-lg">
+                  <Link to={`/${item.type === 'movie' ? 'movies' : 'series'}/${item.id}`} className="text-red-600 hover:text-red-400">
+                    <CardContent className="flex flex-row">
+                      <div className="flex flex-col justify-center bg-black bg-opacity-50 p-4 pl-10 rounded max-w-3xl text-left w-1/4 z-10 relative">
+                        <h2 className="text-white font-semibold">
+                          {item.type === 'movie' ? item.title : item.name}{" "}
+                          {item.type === 'movie'
+                            ? `(${item.release_date.substring(0, 4)})`
+                            : `(${item.first_air_date.substring(0, 4)})`}
+                        </h2>
+                        <div className="text-white mt-4">
+                          <StarRating rating={item.vote_average} count={item.vote_count} />
+                        </div>
+                        <div className="text-white mt-2">
+                          {item.type === 'movie' ? `${item.runtime} mins` : `${item.number_of_seasons} Seasons`}
+                        </div>
+                        <div className="text-white mt-2">
+                          {item.type === 'movie'
+                            ? getMovieGenres(item.genre_ids).join(", ")
+                            : getTVGenres(item.genre_ids).join(", ")}
+                        </div>
+                        <p className="text-white mt-2 hidden lg:block">
+                          {truncateOverview(item.overview, 25)}
+                          {item.overview.split(" ").length > 25 && (
+                            <Link to={`/${item.type === 'movie' ? 'movies' : 'series'}/${item.id}`} className="text-red-600 hover:text-red-400">read more</Link>
+                          )}
+                        </p>
+                      </div>
+                      <div className="relative w-3/4 h-96 xl:h-[400px] 2xl:h-[500px]">
+                        <div className="absolute inset-0 bg-gradient-to-r from-black to-transparent" />
+                        <img
+                          className="object-cover w-full h-full"
+                          src={`https://image.tmdb.org/t/p/original${item.backdrop_path}`}
+                        />
+                      </div>
+                    </CardContent>
                   </Link>
                   <Button
-                    onClick={() =>handleAddToWatchList({id: item.id,
-                   title: 'title' in item ? item.title : 'name' in item ? item.name : '', 
-                      type: item.type}) }
+                    onClick={() => handleAddToWatchList({
+                      id: item.id,
+                      title: 'title' in item ? item.title : 'name' in item ? item.name : '',
+                      type: item.type
+                    })}
                     className="absolute h-[30px] bottom-2 right-2 transform bg-zinc-800 px-[8px] py-[8px] pr-10 text-white opacity-0 group-hover:opacity-100 transition-opacity duration-300"
                   >
                     <FaPlus className="mr-2" /> Add to Watchlist
                   </Button>
                 </Card>
-              
-            </CarouselItem>
-          ))}
+              </CarouselItem>
+            ))
+          )}
         </CarouselContent>
         <CarouselPrevious className="bg-zinc-900 border-zinc-900" />
         <CarouselNext className="bg-zinc-900 border-zinc-900" />

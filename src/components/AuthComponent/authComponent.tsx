@@ -1,10 +1,10 @@
-import React, { useState, useEffect } from 'react';
-import { createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged } from 'firebase/auth';
+import React, { useState} from 'react';
+import { createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut} from 'firebase/auth';
 import { doc, setDoc } from 'firebase/firestore';
 import { auth, db } from '../../config/firebase-config';
 import { fetchWatchlist } from '@/redux/slice/watchlistSlice';
-import { useDispatch } from 'react-redux';
-import { AppDispatch } from '@/redux/app/store';
+import { useDispatch, useSelector } from 'react-redux';
+import { AppDispatch, RootState } from '@/redux/app/store';
 import { setLogin } from '@/redux/slice/authSlice';
 
 import {
@@ -24,20 +24,12 @@ const AuthComponent: React.FC = () => {
   const [email, setEmail] = useState<string>('');
   const [password, setPassword] = useState<string>('');
   const [isRegistering, setIsRegistering] = useState<boolean>(false);
-  const [currentUser, setCurrentUser] = useState<any>(null);
   const dispatch = useDispatch<AppDispatch>();
   const [dialogOpen, setDialogOpen] = useState<boolean>(false);
+  const uid = useSelector((state: RootState) => state.auth.uid);
+  const mail=useSelector((state: RootState) => state.auth.email);
 
-  useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, (user) => {
-      if (user) {
-        setCurrentUser(user);
-      } else {
-        setCurrentUser(null);
-      }
-    });
-    return () => unsubscribe();
-  }, []);
+  
 
   const handleSignUp = async (event: React.FormEvent) => {
     event.preventDefault();
@@ -102,9 +94,9 @@ const AuthComponent: React.FC = () => {
 
   return (
     <>
-      {currentUser ? (
+      {uid ? (
         <div className="flex items-center space-x-4">
-          <span>{currentUser.email}</span>
+          <span>{mail}</span>
           <Button className="m-[5px]" onClick={handleSignOut}>
             <FaSignOutAlt />
           </Button>
