@@ -10,8 +10,7 @@ import {
 import axios from 'axios';
 
 interface CastCarouselProps {
-  title: string;
-  URL: string;
+    URL: string;
 }
 
 interface Cast {
@@ -21,7 +20,7 @@ interface Cast {
   profile_path: string;
 }
 
-export const CastCarousel: React.FC<CastCarouselProps> = ({ title, URL }) => {
+export const CastCarousel: React.FC<CastCarouselProps> = ({ URL }) => {
   const [cast, setCast] = useState<Cast[]>([]);
   const [scrollIndex, setScrollIndex] = useState<number>(0);
   const [itemsPerPage, setItemsPerPage] = useState<number>(6); // Default value for large screens

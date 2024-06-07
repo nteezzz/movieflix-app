@@ -208,7 +208,7 @@ export const DetailsPage: React.FC = () => {
         </CardContent>
       </Card>
       <div className="max-w-6xl mx-[24px]">
-        <CastCarousel title="Cast" URL={`https://api.themoviedb.org/3/${isMovie ? 'movie' : 'tv'}/${id}/credits?api_key=${API_KEY}`} />
+        <CastCarousel URL={`https://api.themoviedb.org/3/${isMovie ? 'movie' : 'tv'}/${id}/credits?api_key=${API_KEY}`} />
       </div>
     </div>
   );
