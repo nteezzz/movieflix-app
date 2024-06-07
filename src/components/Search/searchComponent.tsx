@@ -73,9 +73,16 @@ export const SearchComponent: React.FC = () => {
 
   const handleAddToWatchlist = (item: Media) => {
     const userId = uid || "";
-    const itemType = item.media_type === 'movie' ? 'movie' : 'show';
-    const itemTitle = item.media_type === 'movie' ? (item.original_title || '') : (item.original_name || '');
-    dispatch(addItemToFirestore({ userId, item: { id: item.id, title: itemTitle, type: itemType } }));
+    if(uid==null)
+      {
+        alert("Please Login to add items to watchlist")
+      }
+      else
+      {
+        const itemType = item.media_type === 'movie' ? 'movie' : 'show';
+        const itemTitle = item.media_type === 'movie' ? (item.original_title || '') : (item.original_name || '');
+        dispatch(addItemToFirestore({ userId, item: { id: item.id, title: itemTitle, type: itemType } }));
+      }
   };
 
   return (

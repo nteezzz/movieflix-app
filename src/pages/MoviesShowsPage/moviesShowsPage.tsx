@@ -12,6 +12,7 @@ const MoviesShowsPage: React.FC<MoviesShowsPageProps> = ({ category }) => {
   const [nowShowingURL, setNowShowingURL] = useState<string>('');
   const [loading, setLoading] = useState<boolean>(true);
   const baseURL = 'https://api.themoviedb.org/3';
+  const [carouselKey, setCarouselKey] = useState<number>(0); 
 
   useEffect(() => {
     switch (category) {
@@ -29,6 +30,7 @@ const MoviesShowsPage: React.FC<MoviesShowsPageProps> = ({ category }) => {
         throw new Error('Invalid category');
     }
     setLoading(false);
+    setCarouselKey((prevKey) => prevKey + 1);
   }, [category]);
 
   return (
@@ -37,9 +39,9 @@ const MoviesShowsPage: React.FC<MoviesShowsPageProps> = ({ category }) => {
         <div>Loading...</div>
       ) : (
         <>
-          <ListCarousel key={`${category}-popular`} title={`Popular ${category}`} URL={popularURL} />
-          <ListCarousel key={`${category}-toprated`} title={`Top Rated ${category}`} URL={topRatedURL} />
-          <ListCarousel key={`${category}-nowshowing`} title={`Now Playing ${category}`} URL={nowShowingURL} />
+          <ListCarousel key={`popular${category}-${carouselKey}`} title={`Popular ${category}`} URL={popularURL} />
+          <ListCarousel key={`toprated${category}-${carouselKey}`} title={`Top Rated ${category}`} URL={topRatedURL} />
+          <ListCarousel key={`nowshowing${category}-${carouselKey}`} title={`Now Playing ${category}`} URL={nowShowingURL} />
         </>
       )}
     </div>

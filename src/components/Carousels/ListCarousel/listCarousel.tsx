@@ -52,7 +52,7 @@ export const ListCarousel: React.FC<ListCarouselProps> = ({ title, URL }) => {
       }
     };
     fetchItems(currentPage);
-  }, [URL, currentPage]);
+  },[URL, currentPage]);
 
   const updateItemsPerPage = () => {
     const width = window.innerWidth;
@@ -96,9 +96,17 @@ export const ListCarousel: React.FC<ListCarouselProps> = ({ title, URL }) => {
 
   const handleAddToWatchList = (item: Item) => {
     const userId = uid || "";
-    const itemType = 'title' in item ? 'movie' : 'show'; // Check if it's a movie or TV series
-    const itemTitle = itemType == 'movie' ? (item.title || ' ') : (item.name || ' ');  // Get the title based on the item type
-    dispatch(addItemToFirestore({ userId, item: { id: item.id, title: itemTitle, type: itemType } }));
+    if(uid==null)
+      {
+        alert("Please Login to add items to watchlist")
+      }
+      else
+      {
+        const itemType = 'title' in item ? 'movie' : 'show'; 
+        const itemTitle = itemType == 'movie' ? (item.title || ' ') : (item.name || ' '); 
+        dispatch(addItemToFirestore({ userId, item: { id: item.id, title: itemTitle, type: itemType } }));
+      }
+    
   };
 
   return (

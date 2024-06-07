@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import axios from 'axios';
-import { Card, CardContent} from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import StarRating from "../../components/StarRating/starRating";
 import { API_KEY } from '@/config';
 import { CastCarousel } from '../../components/Carousels/CastCarousel/castCarousel';
@@ -10,6 +10,7 @@ import { addItemToFirestore } from '@/redux/slice/watchlistSlice';
 import { useDispatch, useSelector } from 'react-redux';
 import { AppDispatch, RootState } from '@/redux/app/store';
 import { FaPlus } from 'react-icons/fa';
+import { FaPlay } from 'react-icons/fa';
 
 interface Genre {
   id: number;
@@ -67,28 +68,35 @@ interface Crew {
   name: string;
   job: string;
 }
+
 interface WatchlistItem {
   id: number;
   title: string;
   type: 'movie' | 'show';
 }
 
-
 export const DetailsPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const [item, setItem] = useState<Movie | Show | null>(null);
+  const [trailerUrl, setTrailerUrl] = useState<string | null>(null);
   const isMovie = window.location.pathname.includes('/movies/');
-  const dispatch= useDispatch<AppDispatch>();
-  const uid =useSelector((state: RootState) => state.auth.uid)
+  const dispatch = useDispatch<AppDispatch>();
+  const uid = useSelector((state: RootState) => state.auth.uid);
 
   useEffect(() => {
     const fetchDetails = async () => {
       try {
         const response = await axios.get(
-          `https://api.themoviedb.org/3/${isMovie ? 'movie' : 'tv'}/${id}?api_key=${API_KEY}&append_to_response=credits`
+          `https://api.themoviedb.org/3/${isMovie ? 'movie' : 'tv'}/${id}?api_key=${API_KEY}&append_to_response=credits,videos`
         );
         const data = response.data;
         setItem({ ...data, type: isMovie ? 'movie' : 'show' });
+        
+        // Find trailer URL
+        const trailers = data.videos.results.filter((video: any) => video.type === 'Trailer');
+        if (trailers.length > 0) {
+          setTrailerUrl(`https://www.youtube.com/watch?v=${trailers[0].key}`);
+        }
       } catch (error) {
         console.error('Error fetching details:', error);
       }
@@ -105,10 +113,24 @@ export const DetailsPage: React.FC = () => {
     const member = crew.find((person) => person.job === job);
     return member ? member.name : 'Unknown';
   };
-  const handleAddToWatchList=(item: WatchlistItem)=>{
+
+  const handleAddToWatchList = (item: WatchlistItem) => {
     const userId = uid || ""; 
-    dispatch(addItemToFirestore({ userId, item }));
-    };
+    if(uid==null)
+      {
+        alert("Please Login to add items to watchlist")
+      }
+      else
+      {
+        dispatch(addItemToFirestore({ userId, item }));
+      }
+  };
+
+  const handlePlayTrailer = () => {
+    if (trailerUrl) {
+      window.open(trailerUrl, '_blank');
+    }
+  };
 
   if (!item) {
     return <div>Loading...</div>;
@@ -121,7 +143,7 @@ export const DetailsPage: React.FC = () => {
           <img
             src={`https://image.tmdb.org/t/p/w500${item.poster_path}`}
             alt={item.type === 'movie' ? item.title : item.name}
-            className="object-cover  h-full w-full md:w-1/3 "
+            className="object-cover h-full w-full md:w-1/3 "
           />
           
           <div className="p-4 w-full text-left md:w-2/3">
@@ -162,14 +184,26 @@ export const DetailsPage: React.FC = () => {
             <div className="text-white mt-2">
               Music: {getCrewMember(item.credits.crew, 'Original Music Composer')}
             </div>
-            <Button
-                    onClick={() =>handleAddToWatchList({id: item.id,
-                   title: 'title' in item ? item.title : 'name' in item ? item.name : '', 
-                      type: item.type}) }
-                    className="h-[30px] mt-[10px] transform bg-zinc-800 px-[8px] py-[8px] pr-10 text-white "
-                  >
-                    <FaPlus className="mr-2" /> Add to Watchlist
-            </Button>
+            <div className="flex space-x-2">
+              <Button
+                onClick={() => handleAddToWatchList({
+                  id: item.id,
+                  title: 'title' in item ? item.title : 'name' in item ? item.name : '',
+                  type: item.type
+                })}
+                className="h-[30px] mt-[10px] transform bg-zinc-800 px-[8px] py-[8px] text-white"
+              >
+                <FaPlus className="mr-2" /> Add to Watchlist
+              </Button>
+              {trailerUrl && (
+                <Button
+                  onClick={handlePlayTrailer}
+                  className="h-[30px] mt-[10px] transform bg-zinc-800 px-[8px] py-[8px] text-white"
+                >
+                  <FaPlay className="mr-2" /> Play Trailer
+                </Button>
+              )}
+            </div>
           </div>
         </CardContent>
       </Card>

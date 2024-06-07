@@ -30,7 +30,7 @@ interface Movie {
   genre_ids: number[];
   vote_average: number;
   vote_count: number;
-  runtime?: number; // Optional property for runtime
+  runtime?: number; 
   type: 'movie';
 }
 
@@ -44,7 +44,7 @@ interface Show {
   genre_ids: number[];
   vote_average: number;
   vote_count: number;
-  number_of_seasons?: number; // Optional property for number of seasons
+  number_of_seasons?: number; 
   type: 'show';
 }
 interface WatchlistItem {
@@ -60,7 +60,7 @@ interface HeroCarouselProps {
 
 export const HeroCarousel: React.FC<HeroCarouselProps> = ({ movieURL, tvURL }) => {
   const [items, setItems] = useState<(Movie | Show)[]>([]);
-  const [loading, setLoading] = useState(true); // Loading state
+  const [loading, setLoading] = useState(true); 
   const { moviegenres, tvgenres } = useGenres();
   const dispatch = useDispatch<AppDispatch>();
   const uid = useSelector((state: RootState) => state.auth.uid);
@@ -101,11 +101,11 @@ export const HeroCarousel: React.FC<HeroCarouselProps> = ({ movieURL, tvURL }) =
         })
       );
       setItems(detailedItems);
-      setLoading(false); // Set loading to false once data is loaded
+      setLoading(false);
     };
 
     const fetchData = async () => {
-      setLoading(true); // Set loading to true while fetching data
+      setLoading(true); 
       const movies = await fetchMovies();
       const shows = await fetchShows();
       const combined = [...movies, ...shows];
@@ -140,7 +140,15 @@ export const HeroCarousel: React.FC<HeroCarouselProps> = ({ movieURL, tvURL }) =
 
   const handleAddToWatchList = (item: WatchlistItem) => {
     const userId = uid || "";
-    dispatch(addItemToFirestore({ userId, item }));
+    if(uid==null)
+      {
+        alert("Please Login to add items to watchlist")
+      }
+      else
+      {
+        dispatch(addItemToFirestore({ userId, item }));
+      }
+    
   };
 
   return (
