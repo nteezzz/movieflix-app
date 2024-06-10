@@ -6,11 +6,9 @@ import StarRating from "../../components/StarRating/starRating";
 import { API_KEY } from '@/config';
 import { CastCarousel } from '../../components/Carousels/CastCarousel/castCarousel';
 import { Button } from '@/components/ui/button';
-import { addItemToFirestore } from '@/redux/slice/watchlistSlice';
-import { useDispatch, useSelector } from 'react-redux';
-import { AppDispatch, RootState } from '@/redux/app/store';
 import { FaPlus } from 'react-icons/fa';
 import { FaPlay } from 'react-icons/fa';
+import { useWatchlist } from '@/lib/hooks/useWatchlist';
 
 interface Genre {
   id: number;
@@ -54,7 +52,7 @@ interface Show {
     cast: Cast[];
     crew: Crew[];
   };
-  type: 'show';
+  type: 'tv';
 }
 
 interface Cast {
@@ -69,19 +67,12 @@ interface Crew {
   job: string;
 }
 
-interface WatchlistItem {
-  id: number;
-  title: string;
-  type: 'movie' | 'show';
-}
-
 export const DetailsPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const [item, setItem] = useState<Movie | Show | null>(null);
   const [trailerUrl, setTrailerUrl] = useState<string | null>(null);
   const isMovie = window.location.pathname.includes('/movies/');
-  const dispatch = useDispatch<AppDispatch>();
-  const uid = useSelector((state: RootState) => state.auth.uid);
+  const handleAddToWatchList=useWatchlist();
 
   useEffect(() => {
     const fetchDetails = async () => {
@@ -114,17 +105,6 @@ export const DetailsPage: React.FC = () => {
     return member ? member.name : 'Unknown';
   };
 
-  const handleAddToWatchList = (item: WatchlistItem) => {
-    const userId = uid || ""; 
-    if(uid==null)
-      {
-        alert("Please Login to add items to watchlist")
-      }
-      else
-      {
-        dispatch(addItemToFirestore({ userId, item }));
-      }
-  };
 
   const handlePlayTrailer = () => {
     if (trailerUrl) {

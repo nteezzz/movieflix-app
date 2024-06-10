@@ -9,25 +9,24 @@ import {
 } from "@/components/ui/carousel";
 import { Link } from "react-router-dom";
 import axios from 'axios';
-import { Button } from '../../ui/button';
+import { Button } from '@/components/ui/button';
 import { FaPlus } from 'react-icons/fa';
-import { addItemToFirestore } from '@/redux/slice/watchlistSlice';
-import { useDispatch, useSelector } from 'react-redux';
-import { AppDispatch, RootState } from '@/redux/app/store';
-import '../carousel.css'
-import { Skeleton } from "@/components/ui/skeleton"; // Import Skeleton component
+import '@/components/Carousels/carousel.css';
+import { Skeleton } from "@/components/ui/skeleton"; 
+import { useWatchlist } from '@/lib/hooks/useWatchlist';
 
 interface ListCarouselProps {
   title: string;
   URL: string;
 }
+
 interface Item {
   id: number;
   title?: string;
   poster_path: string;
   overview: string;
   name?: string;
-  type: 'movie' | 'show';
+  media_type: 'movie' | 'tv';
 }
 
 export const ListCarousel: React.FC<ListCarouselProps> = ({ title, URL }) => {
@@ -36,9 +35,8 @@ export const ListCarousel: React.FC<ListCarouselProps> = ({ title, URL }) => {
   const [itemsPerPage, setItemsPerPage] = useState<number>(6);
   const [currentPage, setCurrentPage] = useState<number>(1);
   const [totalPages, setTotalPages] = useState<number>(1);
-  const dispatch = useDispatch<AppDispatch>();
-  const uid = useSelector((state: RootState) => state.auth.uid);
   const [loading, setLoading] = useState(true); 
+  const handleAddToWatchList = useWatchlist();
 
   useEffect(() => {
     const fetchItems = async (page: number) => {
@@ -52,7 +50,7 @@ export const ListCarousel: React.FC<ListCarouselProps> = ({ title, URL }) => {
       }
     };
     fetchItems(currentPage);
-  },[URL, currentPage]);
+  }, [URL, currentPage]);
 
   const updateItemsPerPage = () => {
     const width = window.innerWidth;
@@ -94,21 +92,6 @@ export const ListCarousel: React.FC<ListCarouselProps> = ({ title, URL }) => {
     );
   };
 
-  const handleAddToWatchList = (item: Item) => {
-    const userId = uid || "";
-    if(uid==null)
-      {
-        alert("Please Login to add items to watchlist")
-      }
-      else
-      {
-        const itemType = 'title' in item ? 'movie' : 'show'; 
-        const itemTitle = itemType == 'movie' ? (item.title || ' ') : (item.name || ' '); 
-        dispatch(addItemToFirestore({ userId, item: { id: item.id, title: itemTitle, type: itemType } }));
-      }
-    
-  };
-
   return (
     <div className="mt-[5px]">
       <div className="flex text-lg m-[5px] justify-self-start">
@@ -126,12 +109,11 @@ export const ListCarousel: React.FC<ListCarouselProps> = ({ title, URL }) => {
             Array.from({ length: itemsPerPage }).map((_, index) => (
               <CarouselItem key={index} style={{ flex: `0 0 ${100 / itemsPerPage}%` }}>
                 <div className="relative p-1 group card-container">
-                <Card className="bg-zinc-950 border-zinc-900 card-hover">
-                      <CardContent className="flex aspect-auto items-center justify-center">
+                  <Card className="bg-zinc-950 border-zinc-900 card-hover">
+                    <CardContent className="flex aspect-auto items-center justify-center">
                       <Skeleton className="object-cover w-full h-full animate-pulse" />
-                      </CardContent>
-                    </Card>
-                  
+                    </CardContent>
+                  </Card>
                 </div>
               </CarouselItem>
             ))
@@ -139,19 +121,23 @@ export const ListCarousel: React.FC<ListCarouselProps> = ({ title, URL }) => {
             items.map((item) => (
               <CarouselItem key={item.id} style={{ flex: `0 0 ${100 / itemsPerPage}%` }}>
                 <div className="relative p-1 group card-container">
-                  <Link to={`/${item.title ? 'movies' : 'series'}/${item.id}`}>
+                  <Link to={`/${item.media_type === 'movie' ? 'movies' : 'series'}/${item.id}`}>
                     <Card className="bg-zinc-950 border-zinc-900 card-hover">
                       <CardContent className="flex aspect-auto items-center justify-center">
                         <img
                           src={`https://image.tmdb.org/t/p/w500${item.poster_path}`}
-                          alt={item.title}
+                          alt={item.title || item.name}
                           className="object-cover h-full w-full rounded-md"
                         />
                       </CardContent>
                     </Card>
                   </Link>
                   <Button
-                    onClick={() => handleAddToWatchList(item)}
+                    onClick={() => handleAddToWatchList({
+                      id: item.id,
+                      title: item.media_type=='movie'?(item.title||" "):(item.name||" "),
+                      type: item.media_type,
+                    })}
                     className="absolute h-[30px] bottom-2 right-2 transform bg-zinc-800 px-[8px] py-[8px] text-white lg:opacity-0 group-hover:opacity-100 transition-opacity duration-300"
                   >
                     <FaPlus />

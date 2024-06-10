@@ -94,7 +94,7 @@ const AuthComponent: React.FC = () => {
       await signOut(auth);
       alert('User signed out');
       dispatch(setLogout());
-      setDialogOpen(false); // Close the dialog on logout
+      setDialogOpen(false); 
     } catch (error: any) {
       alert(`Sign out error: ${error.message}`);
       console.error(error);

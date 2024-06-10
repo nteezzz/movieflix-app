@@ -5,7 +5,7 @@ import { doc, getDoc, updateDoc, arrayUnion, arrayRemove } from 'firebase/firest
 interface WatchlistItem {
   id: number;
   title: string;
-  type: 'movie' | 'show';
+  type: 'movie' | 'tv';
 }
 
 interface WatchlistState {

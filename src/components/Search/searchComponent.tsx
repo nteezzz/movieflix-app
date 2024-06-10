@@ -14,10 +14,8 @@ import { Input } from "../ui/input";
 import { API_KEY } from "@/config";
 import Skeleton from 'react-loading-skeleton';
 import 'react-loading-skeleton/dist/skeleton.css';
-import { useDispatch, useSelector } from "react-redux";
-import { AppDispatch, RootState } from "@/redux/app/store";
-import { addItemToFirestore } from '@/redux/slice/watchlistSlice';
 import "../Carousels/carousel.css";
+import { useWatchlist } from "@/lib/hooks/useWatchlist";
 
 
 interface Media {
@@ -25,7 +23,7 @@ interface Media {
   original_name?: string;
   original_title?: string;
   poster_path: string;
-  media_type: string;
+  media_type: 'movie'|'tv';
 }
 
 export const SearchComponent: React.FC = () => {
@@ -35,9 +33,8 @@ export const SearchComponent: React.FC = () => {
   const [loading, setLoading] = useState<boolean>(false);
   const [displayQuery, setDisplayQuery] = useState<string>('');
   const [dialogOpen, setDialogOpen] = useState<boolean>(false);
-  const dispatch = useDispatch<AppDispatch>();
-  const uid = useSelector((state: RootState) => state.auth.uid);
-
+  const handleAddToWatchlist=useWatchlist();
+  
   useEffect(() => {
     const fetchTrendingMovies = async () => {
       try {
@@ -71,19 +68,6 @@ export const SearchComponent: React.FC = () => {
     }
   };
 
-  const handleAddToWatchlist = (item: Media) => {
-    const userId = uid || "";
-    if(uid==null)
-      {
-        alert("Please Login to add items to watchlist")
-      }
-      else
-      {
-        const itemType = item.media_type === 'movie' ? 'movie' : 'show';
-        const itemTitle = item.media_type === 'movie' ? (item.original_title || '') : (item.original_name || '');
-        dispatch(addItemToFirestore({ userId, item: { id: item.id, title: itemTitle, type: itemType } }));
-      }
-  };
 
   return (
     <Dialog  open={dialogOpen}>
@@ -142,7 +126,9 @@ export const SearchComponent: React.FC = () => {
                       </Card>
                     </Link>
                     <Button
-                      onClick={() => handleAddToWatchlist(item)}
+                      onClick={() => handleAddToWatchlist({
+                        id: item.id, title: item.media_type === 'movie' ? (item.original_title || '') : (item.original_name || ''),type: item.media_type
+                      })}
                       className="absolute h-[30px] bottom-2 right-2 bg-zinc-800 p-2 text-white opacity-0 group-hover:opacity-100 transition-opacity duration-300"
                     >
                       <FaPlus />
@@ -171,7 +157,9 @@ export const SearchComponent: React.FC = () => {
                       </Card>
                     </Link>
                     <Button
-                      onClick={() => handleAddToWatchlist(item)}
+                      onClick={() => handleAddToWatchlist({
+                        id: item.id, title: item.media_type === 'movie' ? (item.original_title || '') : (item.original_name || ''),type: item.media_type
+                      })}
                       className="absolute h-[30px] bottom-2 right-2 bg-zinc-800 p-2 text-white opacity-0 group-hover:opacity-100 transition-opacity duration-300"
                     >
                       <FaPlus />

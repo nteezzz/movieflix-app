@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, {useEffect, useState } from 'react';
 import axios from 'axios';
 import { Card, CardContent } from "@/components/ui/card";
 import {
@@ -11,14 +11,13 @@ import {
 import Autoplay from "embla-carousel-autoplay";
 import StarRating from "../../StarRating/starRating";
 import { Link } from "react-router-dom";
-import useGenres from '../../Genres/useGenres';
 import { API_KEY } from '@/config';
 import { Button } from '@/components/ui/button';
 import { FaPlus } from 'react-icons/fa';
-import { useDispatch, useSelector } from 'react-redux';
-import { AppDispatch, RootState } from '@/redux/app/store';
-import { addItemToFirestore } from '@/redux/slice/watchlistSlice';
 import { Skeleton } from "@/components/ui/skeleton";
+import { getMovieGenres, getTVGenres,truncateOverview } from '@/lib/helper';
+import useGenres from '@/lib/hooks/useGenres';
+import { useWatchlist } from '@/lib/hooks/useWatchlist';
 
 interface Movie {
   id: number;
@@ -45,13 +44,9 @@ interface Show {
   vote_average: number;
   vote_count: number;
   number_of_seasons?: number; 
-  type: 'show';
+  type: 'tv';
 }
-interface WatchlistItem {
-  id: number;
-  title: string;
-  type: 'movie' | 'show';
-}
+
 
 interface HeroCarouselProps {
   movieURL: string;
@@ -61,10 +56,8 @@ interface HeroCarouselProps {
 export const HeroCarousel: React.FC<HeroCarouselProps> = ({ movieURL, tvURL }) => {
   const [items, setItems] = useState<(Movie | Show)[]>([]);
   const [loading, setLoading] = useState(true); 
+  const handleAddToWatchList=useWatchlist();
   const { moviegenres, tvgenres } = useGenres();
-  const dispatch = useDispatch<AppDispatch>();
-  const uid = useSelector((state: RootState) => state.auth.uid);
-
   useEffect(() => {
     const fetchMovies = async () => {
       try {
@@ -80,7 +73,7 @@ export const HeroCarousel: React.FC<HeroCarouselProps> = ({ movieURL, tvURL }) =
     const fetchShows = async () => {
       try {
         const response = await axios.get(tvURL);
-        const shows = response.data.results.map((show: Show) => ({ ...show, type: 'show' }));
+        const shows = response.data.results.map((show: Show) => ({ ...show, type: 'tv' }));
         return shows;
       } catch (error) {
         console.error('Error fetching shows:', error);
@@ -115,50 +108,14 @@ export const HeroCarousel: React.FC<HeroCarouselProps> = ({ movieURL, tvURL }) =
     fetchData();
   }, [movieURL, tvURL]);
 
-  const getMovieGenres = (genreIds: number[]): string[] => {
-    return genreIds.map((id) => {
-      const genre = moviegenres.find((genre) => genre.id === id);
-      return genre ? genre.name : "";
-    });
-  };
-
-  const getTVGenres = (genreIds: number[]): string[] => {
-    return genreIds.map((id) => {
-      const genre = tvgenres.find((genre) => genre.id === id);
-      return genre ? genre.name : "";
-    });
-  };
-
-  const truncateOverview = (overview: string, maxWords: number): string => {
-    const words = overview.split(" ");
-    if (words.length > maxWords) {
-      return words.slice(0, maxWords).join(" ") + "...";
-    } else {
-      return overview;
-    }
-  };
-
-  const handleAddToWatchList = (item: WatchlistItem) => {
-    const userId = uid || "";
-    if(uid==null)
-      {
-        alert("Please Login to add items to watchlist")
-      }
-      else
-      {
-        dispatch(addItemToFirestore({ userId, item }));
-      }
-    
-  };
-
   return (
-    <div className="mt-[5px]">
+    <div className="mt-5">
       <Carousel plugins={[Autoplay({ delay: 5000 })]}>
         <CarouselContent className="bg-zinc-950">
           {loading ? (
             Array.from({ length: 3 }).map((_, index) => (
               <CarouselItem key={index} className="group h-96 xl:h-[400px] 2xl:h-[500px]">
-                <Card className="flex flex-row bg-black border-zinc-900 mx-auto relative overflow-hidden transition-transform transform hover:scale-105 hover:shadow-lg">
+                <Card className="flex flex-row bg-black border-zinc-900 mx-auto relative overflow-hidden transform transition-transform hover:scale-105 hover:shadow-lg">
                   <CardContent className="flex flex-row">
                     <div className="flex flex-col justify-center bg-black bg-opacity-50 p-4 pl-10 rounded max-w-3xl text-left w-1/4 z-10 relative">
                       <Skeleton className="h-6 w-3/4 mb-4 animate-pulse" />
@@ -177,7 +134,7 @@ export const HeroCarousel: React.FC<HeroCarouselProps> = ({ movieURL, tvURL }) =
           ) : (
             items.map((item) => (
               <CarouselItem key={item.id} className="group h-96 xl:h-[400px] 2xl:h-[500px]">
-                <Card className="flex flex-row bg-black border-zinc-900 mx-auto relative overflow-hidden transition-transform transform hover:scale-105 hover:shadow-lg">
+                <Card className="flex flex-row bg-black border-zinc-900 mx-auto relative overflow-hidden transform transition-transform hover:scale-105 hover:shadow-lg">
                   <Link to={`/${item.type === 'movie' ? 'movies' : 'series'}/${item.id}`} className="text-red-600 hover:text-red-400">
                     <CardContent className="flex flex-row">
                       <div className="flex flex-col justify-center bg-black bg-opacity-50 p-4 pl-10 rounded max-w-3xl text-left w-1/4 z-10 relative">
@@ -195,8 +152,8 @@ export const HeroCarousel: React.FC<HeroCarouselProps> = ({ movieURL, tvURL }) =
                         </div>
                         <div className="text-white mt-2">
                           {item.type === 'movie'
-                            ? getMovieGenres(item.genre_ids).join(", ")
-                            : getTVGenres(item.genre_ids).join(", ")}
+                            ? getMovieGenres(moviegenres,item.genre_ids).join(", ")
+                            : getTVGenres(tvgenres,item.genre_ids).join(", ")}
                         </div>
                         <p className="text-white mt-2 hidden lg:block">
                           {truncateOverview(item.overview, 25)}
@@ -220,7 +177,7 @@ export const HeroCarousel: React.FC<HeroCarouselProps> = ({ movieURL, tvURL }) =
                       title: 'title' in item ? item.title : 'name' in item ? item.name : '',
                       type: item.type
                     })}
-                    className="absolute h-[30px] bottom-2 right-2 transform bg-zinc-800 px-[8px] py-[8px] pr-10 text-white opacity-0 group-hover:opacity-100 transition-opacity duration-300"
+                    className="absolute h-[30px] bottom-2 right-2 transform bg-zinc-800 px-3 py-1 text-white opacity-0 group-hover:opacity-100 transition-opacity duration-300"
                   >
                     <FaPlus className="mr-2" /> Add to Watchlist
                   </Button>
