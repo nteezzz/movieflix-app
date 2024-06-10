@@ -19,6 +19,7 @@ import {
 import { Button } from '../ui/button';
 import { Input } from '../ui/input';
 import { FaSignOutAlt } from 'react-icons/fa';
+import { toast } from 'sonner';
 
 const AuthComponent: React.FC = () => {
   const [email, setEmail] = useState<string>('');
@@ -39,7 +40,7 @@ const AuthComponent: React.FC = () => {
         }
       } else {
         dispatch(setLogout());
-        setDialogOpen(false); // Close the dialog when user logs out
+        setDialogOpen(false); 
       }
     });
 
@@ -56,7 +57,7 @@ const AuthComponent: React.FC = () => {
       if (email && uid) {
         dispatch(setLogin({ uid, email }));
         dispatch(fetchWatchlist(uid));
-        setDialogOpen(false); // Close the dialog after successful sign-up
+        setDialogOpen(false); 
       }
     } catch (error: any) {
       if (error.code === 'auth/network-request-failed') {
@@ -72,18 +73,26 @@ const AuthComponent: React.FC = () => {
     event.preventDefault();
     try {
       const userCredential = await signInWithEmailAndPassword(auth, email, password);
-      alert(`User signed in: ${userCredential.user.email}`);
+      toast.success(`User signed in: `, {
+        description: `${userCredential.user.email}`,
+      })
+     
       const { uid, email: userEmail } = userCredential.user;
       if (userEmail && uid) {
         dispatch(setLogin({ uid, email: userEmail }));
         dispatch(fetchWatchlist(uid));
-        setDialogOpen(false); // Close the dialog after successful sign-in
+        setDialogOpen(false); 
       }
     } catch (error: any) {
       if (error.code === 'auth/network-request-failed') {
-        alert("Network error: Please check your internet connection and try again.");
+        toast.error("Network error: ", {
+          description: ' Please check your internet connection and try again.',
+        }) 
+           
       } else {
-        alert(`Sign in error: ${error.message}`);
+        toast.error("Sign in error: ", {
+          description:`${error.message}`,
+        })
       }
       console.error(error);
     }
@@ -92,17 +101,21 @@ const AuthComponent: React.FC = () => {
   const handleSignOut = async () => {
     try {
       await signOut(auth);
-      alert('User signed out');
+      toast(`User signed Out `, {
+        description: ``,
+      })
       dispatch(setLogout());
       setDialogOpen(false); 
     } catch (error: any) {
-      alert(`Sign out error: ${error.message}`);
-      console.error(error);
+      toast.error("Sign out error: ", {
+        description:`${error.message}`,
+      })
+
     }
   };
 
   const handleGuest = () => {
-    alert("Dear guest user, all your data will be lost once the browser is closed/refreshed");
+    toast('Dear guest user',{description:"All your data will be lost once the browser is closed/refreshed"} )
     setDialogOpen(false);
   };
 

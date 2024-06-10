@@ -54,8 +54,8 @@ const CategoryPage: React.FC<CategoryPageProps> = ({ category }) => {
       ) : (
         <>
           <HeroCarousel movieURL={movieURL} tvURL={tvURL} />
-          <ListCarousel key={`movie-${carouselKey}`} title={`${urls.title} Movies`} URL={movieURL} />
-          <ListCarousel key={`tv-${carouselKey}`} title={`${urls.title} TV shows`} URL={tvURL} />
+          <ListCarousel key={`movie-${carouselKey}`} redirect='movies'title={`${urls.title} Movies`} URL={movieURL} />
+          <ListCarousel key={`tv-${carouselKey}`} redirect='series' title={`${urls.title} TV shows`} URL={tvURL} />
         </>
       )}
     </div>

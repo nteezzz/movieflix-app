@@ -13,8 +13,8 @@ export const HomePage: React.FC = () => {
   return (
     <div className="flex flex-col mx-[48px] min-h-screen bg-zinc-950 text-white">
       <HeroCarousel movieURL={MOVIE_URL} tvURL={TV_URL}/>
-      <ListCarousel title="Trending Movies" URL={TREND_MOVIES}/>
-      <ListCarousel title="Trending TV shows" URL={TREND_TV} />      
+      <ListCarousel title="Trending Movies" redirect='movies' URL={TREND_MOVIES}/>
+      <ListCarousel title="Trending TV shows" redirect='series' URL={TREND_TV} />      
     </div>
   );
 };

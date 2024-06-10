@@ -6,11 +6,14 @@ import { HomePage } from './pages/Homepage/homePage';
 import CategoryPage from './pages/Categorypage/categoryPage';
 import MoviesShowsPage from './pages/MoviesShowsPage/moviesShowsPage';
 import { DetailsPage } from './pages/DetailsPage/detailsPage';
-import MyWatchlist from './pages/MyWishlist/myWishlist';
+import MyWatchlist from './pages/MyWatchlist/myWatchlist'
+import { Toaster } from './components/ui/sonner';
+
 
 const App: React.FC = () => {
   return (
-    <Router>
+    <>
+     <Router>
       <MovieHeader />
       <Routes>
         <Route path="/" element={<HomePage/>}/>
@@ -23,7 +26,10 @@ const App: React.FC = () => {
         <Route path="/nowPlaying" element={<CategoryPage category='nowPlaying'/>} />
         <Route path="/myWatchlist" element={<MyWatchlist/>} />
       </Routes>
+      <Toaster/>
     </Router>
+    </>
+   
   );
 };
 

@@ -39,9 +39,9 @@ const MoviesShowsPage: React.FC<MoviesShowsPageProps> = ({ category }) => {
         <div>Loading...</div>
       ) : (
         <>
-          <ListCarousel key={`popular${category}-${carouselKey}`} title={`Popular ${category}`} URL={popularURL} />
-          <ListCarousel key={`toprated${category}-${carouselKey}`} title={`Top Rated ${category}`} URL={topRatedURL} />
-          <ListCarousel key={`nowshowing${category}-${carouselKey}`} title={`Now Playing ${category}`} URL={nowShowingURL} />
+          <ListCarousel key={`popular${category}-${carouselKey}`} redirect='popular' title={`Popular ${category}`} URL={popularURL} />
+          <ListCarousel key={`toprated${category}-${carouselKey}`} redirect='topRated' title={`Top Rated ${category}`} URL={topRatedURL} />
+          <ListCarousel key={`nowshowing${category}-${carouselKey}`} redirect='nowShowing'title={`Now Playing ${category}`} URL={nowShowingURL} />
         </>
       )}
     </div>

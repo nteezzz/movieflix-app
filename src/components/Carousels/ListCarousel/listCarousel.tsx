@@ -17,6 +17,7 @@ import { useWatchlist } from '@/lib/hooks/useWatchlist';
 
 interface ListCarouselProps {
   title: string;
+  redirect: string;
   URL: string;
 }
 
@@ -29,7 +30,7 @@ interface Item {
   media_type: 'movie' | 'tv';
 }
 
-export const ListCarousel: React.FC<ListCarouselProps> = ({ title, URL }) => {
+export const ListCarousel: React.FC<ListCarouselProps> = ({ title, redirect, URL }) => {
   const [items, setItems] = useState<Item[]>([]);
   const [scrollIndex, setScrollIndex] = useState<number>(0);
   const [itemsPerPage, setItemsPerPage] = useState<number>(6);
@@ -95,7 +96,7 @@ export const ListCarousel: React.FC<ListCarouselProps> = ({ title, URL }) => {
   return (
     <div className="mt-[5px]">
       <div className="flex text-lg m-[5px] justify-self-start">
-        <Link to="/" className="px-4 py-2">
+        <Link to={`/${redirect}`}className="px-4 py-2">
           {title}
         </Link>
       </div>

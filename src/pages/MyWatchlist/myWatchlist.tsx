@@ -9,6 +9,7 @@ import { Link } from "react-router-dom";
 import axios from 'axios';
 import { API_KEY } from '@/config';
 import { FaTrash } from 'react-icons/fa';
+import { toast } from 'sonner';
 
 interface WatchlistItem {
   id: number;
@@ -81,6 +82,9 @@ const MyWatchlist: React.FC = () => {
   const handleDelete = (item: WatchlistItem) => {
     if (uid) {
       dispatch(removeItemFromFirestore({ userId: uid, itemId: item.id }));
+      toast(`Removed from your watchlist`, {
+        description: `${item.title}`,
+        })
     }
   };
 

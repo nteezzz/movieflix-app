@@ -91,6 +91,9 @@ const watchlistSlice = createSlice({
     setWatchlist(state, action: PayloadAction<WatchlistItem[]>) {
       state.watchlist = action.payload;
     },
+    clearWatchlist(state){
+      state.watchlist=[];      
+    },
   },
   extraReducers: (builder) => {
     builder
@@ -106,5 +109,5 @@ const watchlistSlice = createSlice({
   }
 });
 
-export const { addItem, removeItem, setWatchlist } = watchlistSlice.actions;
+export const { addItem, removeItem, setWatchlist, clearWatchlist } = watchlistSlice.actions;
 export default watchlistSlice.reducer;
