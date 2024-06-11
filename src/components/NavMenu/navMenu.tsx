@@ -1,4 +1,4 @@
-
+import React from 'react';
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
 import {
@@ -6,19 +6,41 @@ import {
   SheetClose,
   SheetContent,
   SheetDescription,
+  SheetFooter,
   SheetHeader,
   SheetTitle,
   SheetTrigger,
 } from "@/components/ui/sheet";
-import { FaBars } from "react-icons/fa";
-import AuthComponent from '../AuthComponent/authComponent';
-import { useSelector } from 'react-redux';
-import { RootState } from '@/redux/app/store';
-
+import { FaBars, FaSignOutAlt } from "react-icons/fa";
+import { useSelector, useDispatch } from 'react-redux';
+import { RootState, AppDispatch } from '@/redux/app/store';
+import { useAuthDialog } from '../AuthComponent/authContext';
+import { signOut } from 'firebase/auth';
+import { toast } from 'sonner';
+import { setLogout } from '@/redux/slice/authSlice';
+import { auth} from '../../config/firebase-config';
 
 
 export const NavMenu: React.FC = () => {
-  const auth=useSelector((state: RootState) => state.auth.uid)
+  const uid = useSelector((state: RootState) => state.auth.uid);
+  const mail = useSelector((state: RootState) => state.auth.email);
+  const { setDialogOpen } = useAuthDialog();
+  const dispatch = useDispatch<AppDispatch>();
+
+  const handleSignOut = async () => {
+    try {
+      await signOut(auth);
+      toast(`User signed out `, {
+        description: ``,
+      });
+      dispatch(setLogout());
+      setDialogOpen(false); 
+    } catch (error: any) {
+      toast.error("Sign out error: ", {
+        description:`${error.message}`,
+      });
+    }
+  };
 
   return (
     <Sheet>
@@ -55,29 +77,42 @@ export const NavMenu: React.FC = () => {
                 </li>
                 <li>
                   <SheetClose asChild>
-                    <Link to="/topRated" className="text-white hover:text-gray-300">Top rated</Link>
+                    <Link to="/topRated" className="text-white hover:text-gray-300">Top Rated</Link>
                   </SheetClose>
                 </li>
                 <li>
                   <SheetClose asChild>
-                    <Link to="/nowPlaying" className="text-white hover:text-gray-300">Now playing/Airing</Link>
+                    <Link to="/nowShowing" className="text-white hover:text-gray-300">Now Showing</Link>
                   </SheetClose>
                 </li>
-                {auth && (
-                  <li>
-                    <SheetClose asChild>
-                      <Link to="/myWatchlist" className="text-white hover:text-gray-300">My WatchList</Link>
-                    </SheetClose>
-                  </li>
-                )}
+                {uid&&(<li>
+                  <SheetClose asChild>
+                    <Link to="/myWatchlist" className="text-white hover:text-gray-300">My Watchlist</Link>
+                  </SheetClose>
+                </li>)}
               </ul>
             </nav>
           </SheetDescription>
         </div>
-        <div className="mt-auto">
-          <AuthComponent />
-        </div>
+        <SheetFooter>
+        <div className='mt-auto'>
+                {uid? (
+                  <>
+                  <span>{mail}</span>
+                    <Button className="text-white hover:text-gray-300" onClick={handleSignOut}>
+                      <FaSignOutAlt />
+                    </Button>
+                  </>
+                ): (
+                    <Button className="text-white hover:text-gray-300" onClick={() => setDialogOpen(true)}>
+                      Login to Your Account
+                    </Button>
+                )}
+                </div>
+        </SheetFooter>
       </SheetContent>
     </Sheet>
   );
 };
+
+

@@ -8,6 +8,7 @@ import MoviesShowsPage from './pages/MoviesShowsPage/moviesShowsPage';
 import { DetailsPage } from './pages/DetailsPage/detailsPage';
 import MyWatchlist from './pages/MyWatchlist/myWatchlist'
 import { Toaster } from './components/ui/sonner';
+import AuthComponent from './components/AuthComponent/authComponent';
 
 
 const App: React.FC = () => {
@@ -26,6 +27,7 @@ const App: React.FC = () => {
         <Route path="/nowPlaying" element={<CategoryPage category='nowPlaying'/>} />
         <Route path="/myWatchlist" element={<MyWatchlist/>} />
       </Routes>
+      <AuthComponent/>
       <Toaster/>
     </Router>
     </>
