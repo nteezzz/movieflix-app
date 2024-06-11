@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useContext } from 'react';
 import { createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged } from 'firebase/auth';
 import { doc, setDoc } from 'firebase/firestore';
 import { auth, db } from '../../config/firebase-config';
@@ -20,12 +20,13 @@ import { Button } from '../ui/button';
 import { Input } from '../ui/input';
 import { FaSignOutAlt } from 'react-icons/fa';
 import { toast } from 'sonner';
+import { AuthContext } from './authContext';
 
 const AuthComponent: React.FC = () => {
   const [email, setEmail] = useState<string>('');
   const [password, setPassword] = useState<string>('');
   const [isRegistering, setIsRegistering] = useState<boolean>(false);
-  const [dialogOpen, setDialogOpen] = useState<boolean>(false);
+  const {dialogOpen, setDialogOpen} = useContext(AuthContext)
   const dispatch = useDispatch<AppDispatch>();
   const uid = useSelector((state: RootState) => state.auth.uid);
   const mail = useSelector((state: RootState) => state.auth.email);
@@ -129,7 +130,7 @@ const AuthComponent: React.FC = () => {
           </Button>
         </div>
       ) : (
-        <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
+        <Dialog open={dialogOpen} onOpenChange={()=>setDialogOpen(true)}>
           <DialogTrigger asChild>
             <Button onClick={() => setDialogOpen(true)}>Login to Your Account</Button>
           </DialogTrigger>

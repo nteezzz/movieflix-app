@@ -1,14 +1,16 @@
-import { useCallback } from "react";
+import { useCallback, useContext } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { AppDispatch, RootState } from "@/redux/app/store";
 import { addItemToFirestore, removeItemFromFirestore } from "@/redux/slice/watchlistSlice";
 import { WatchlistItem } from '@/lib/helper';
 import { toast } from "sonner"
+import { AuthContext } from "@/components/AuthComponent/authContext";
 
 
 export const useWatchlist = () => {
   const uid = useSelector((state: RootState) => state.auth.uid);
   const dispatch = useDispatch<AppDispatch>();
+  const {setDialogOpen}=useContext(AuthContext);
 
   const handleAddToWatchList = useCallback((item: WatchlistItem) => {
     const userId = uid || "";
@@ -18,7 +20,7 @@ export const useWatchlist = () => {
         description: "",
         action: {
           label: "Login",
-          onClick: () => console.log("login"),
+          onClick: () => {setDialogOpen(true);},
         },
       })
       
