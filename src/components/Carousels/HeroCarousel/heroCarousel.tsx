@@ -1,6 +1,5 @@
-import React, {useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import axios from 'axios';
-import { Card, CardContent } from "@/components/ui/card";
 import {
   Carousel,
   CarouselContent,
@@ -9,17 +8,11 @@ import {
   CarouselPrevious,
 } from "@/components/ui/carousel";
 import Autoplay from "embla-carousel-autoplay";
-import StarRating from "../../StarRating/starRating";
-import { Link } from "react-router-dom";
 import { API_KEY } from '@/config';
-import { Button } from '@/components/ui/button';
-import { FaPlus } from 'react-icons/fa';
-import { Skeleton } from "@/components/ui/skeleton";
-import { getMovieGenres, getTVGenres,truncateOverview } from '@/lib/helper';
-import useGenres from '@/lib/hooks/useGenres';
-import { useWatchlist } from '@/lib/hooks/useWatchlist';
+import { HeroCarouselCard } from './heroCarouselCard';
+import { Skeleton } from '@/components/ui/skeleton';
 
-interface Movie {
+export interface Movie {
   id: number;
   title: string;
   backdrop_path: string;
@@ -29,11 +22,12 @@ interface Movie {
   genre_ids: number[];
   vote_average: number;
   vote_count: number;
-  runtime?: number; 
+  runtime?: number;
   type: 'movie';
+  trailer: string | null;
 }
 
-interface Show {
+export interface Show {
   id: number;
   name: string;
   backdrop_path: string;
@@ -43,10 +37,10 @@ interface Show {
   genre_ids: number[];
   vote_average: number;
   vote_count: number;
-  number_of_seasons?: number; 
+  number_of_seasons?: number;
   type: 'tv';
+  trailer: string | null;
 }
-
 
 interface HeroCarouselProps {
   movieURL: string;
@@ -55,9 +49,12 @@ interface HeroCarouselProps {
 
 export const HeroCarousel: React.FC<HeroCarouselProps> = ({ movieURL, tvURL }) => {
   const [items, setItems] = useState<(Movie | Show)[]>([]);
-  const [loading, setLoading] = useState(true); 
-  const handleAddToWatchList=useWatchlist();
-  const { moviegenres, tvgenres } = useGenres();
+  const [loading, setLoading] = useState(true);
+  const [hoveredItem, setHoveredItem] = useState<number | null>(null);
+  const [hoverTimeout, setHoverTimeout] = useState<NodeJS.Timeout | null>(null);
+  const [trailerMode, setTrailerMode] = useState<boolean>(false);
+  const autoplayRef = useRef<any>(null);
+
   useEffect(() => {
     const fetchMovies = async () => {
       try {
@@ -81,15 +78,32 @@ export const HeroCarousel: React.FC<HeroCarouselProps> = ({ movieURL, tvURL }) =
       }
     };
 
+    const fetchTrailer = async (id: number, type: 'movie' | 'tv') => {
+      try {
+        const response = await axios.get(`https://api.themoviedb.org/3/${type}/${id}/videos?api_key=${API_KEY}`);
+        const trailer = response.data.results.find((video: any) => video.type === 'Trailer' && video.site === 'YouTube');
+        return trailer ? `https://www.youtube.com/embed/${trailer.key}?autoplay=1&controls=0&showinfo=0` : null;
+      } catch (error) {
+        console.error('Error fetching trailer:', error);
+        return null;
+      }
+    };
+
     const fetchDetails = async (items: (Movie | Show)[]) => {
       const detailedItems = await Promise.all(
         items.map(async (item) => {
           if (item.type === 'movie') {
-            const response = await axios.get(`https://api.themoviedb.org/3/movie/${item.id}?api_key=${API_KEY}`);
-            return { ...item, runtime: response.data.runtime };
+            const [detailsResponse, trailerUrl] = await Promise.all([
+              axios.get(`https://api.themoviedb.org/3/movie/${item.id}?api_key=${API_KEY}`),
+              fetchTrailer(item.id, 'movie')
+            ]);
+            return { ...item, runtime: detailsResponse.data.runtime, trailer: trailerUrl };
           } else {
-            const response = await axios.get(`https://api.themoviedb.org/3/tv/${item.id}?api_key=${API_KEY}`);
-            return { ...item, number_of_seasons: response.data.number_of_seasons };
+            const [detailsResponse, trailerUrl] = await Promise.all([
+              axios.get(`https://api.themoviedb.org/3/tv/${item.id}?api_key=${API_KEY}`),
+              fetchTrailer(item.id, 'tv')
+            ]);
+            return { ...item, number_of_seasons: detailsResponse.data.number_of_seasons, trailer: trailerUrl };
           }
         })
       );
@@ -98,7 +112,7 @@ export const HeroCarousel: React.FC<HeroCarouselProps> = ({ movieURL, tvURL }) =
     };
 
     const fetchData = async () => {
-      setLoading(true); 
+      setLoading(true);
       const movies = await fetchMovies();
       const shows = await fetchShows();
       const combined = [...movies, ...shows];
@@ -108,80 +122,51 @@ export const HeroCarousel: React.FC<HeroCarouselProps> = ({ movieURL, tvURL }) =
     fetchData();
   }, [movieURL, tvURL]);
 
+  const HeroCarouselCardSkeleton = () => (
+    <div className="flex">
+      <Skeleton className="h-[400px] w-[1080px] rounded-xl" />
+    </div>
+  );
+
+  const handleMouseEnter = (id: number) => {
+    if (hoverTimeout) clearTimeout(hoverTimeout);
+    setHoveredItem(id);
+    autoplayRef.current?.stop();
+    setHoverTimeout(
+      setTimeout(() => {
+        setTrailerMode(true);
+        console.log(`Playing trailer for item with id: ${id}`);
+      }, 2000)
+    );
+  };
+
+  const handleMouseLeave = () => {
+    if (hoverTimeout) clearTimeout(hoverTimeout);
+    setHoveredItem(null);
+    setTrailerMode(false);
+    console.log(`Pausing trailer`);
+    autoplayRef.current?.play();
+  };
+
   return (
     <div className="mt-5">
-      <Carousel plugins={[Autoplay({ delay: 5000 })]}>
+      <Carousel
+        plugins={[
+          Autoplay({ delay: 3000, stopOnInteraction: false,stopOnMouseEnter: true, ref: autoplayRef })
+        ]}
+      >
         <CarouselContent className="bg-zinc-950">
           {loading ? (
-            Array.from({ length: 3 }).map((_, index) => (
-              <CarouselItem key={index} className="group h-96 xl:h-[400px] 2xl:h-[500px]">
-                <Card className="flex flex-row bg-black border-zinc-900 mx-auto relative overflow-hidden transform transition-transform hover:scale-105 hover:shadow-lg">
-                  <CardContent className="flex flex-row">
-                    <div className="flex flex-col justify-center bg-black bg-opacity-50 p-4 pl-10 rounded max-w-3xl text-left w-1/4 z-10 relative">
-                      <Skeleton className="h-6 w-3/4 mb-4 animate-pulse" />
-                      <Skeleton className="h-4 w-1/2 mb-2 animate-pulse" />
-                      <Skeleton className="h-4 w-1/4 mb-2 animate-pulse" />
-                      <Skeleton className="h-4 w-3/4 mb-2 animate-pulse" />
-                      <Skeleton className="h-4 w-1/2 mb-2 animate-pulse" />
-                    </div>
-                    <div className="relative w-3/4 h-96 xl:h-[400px] 2xl:h-[500px]">
-                      <Skeleton className="object-cover w-full h-full animate-pulse" />
-                    </div>
-                  </CardContent>
-                </Card>
-              </CarouselItem>
-            ))
+            HeroCarouselCardSkeleton()
           ) : (
             items.map((item) => (
-              <CarouselItem key={item.id} className="group h-96 xl:h-[400px] 2xl:h-[500px]">
-                <Card className="flex flex-row bg-black border-zinc-900 mx-auto relative overflow-hidden transform transition-transform hover:scale-105 hover:shadow-lg">
-                  <Link to={`/${item.type === 'movie' ? 'movies' : 'series'}/${item.id}`} className="text-red-600 hover:text-red-400">
-                    <CardContent className="flex flex-row">
-                      <div className="flex flex-col justify-center bg-black bg-opacity-50 p-4 pl-10 rounded max-w-3xl text-left w-1/4 z-10 relative">
-                        <h2 className="text-white font-semibold">
-                          {item.type === 'movie' ? item.title : item.name}{" "}
-                          {item.type === 'movie'
-                            ? `(${item.release_date.substring(0, 4)})`
-                            : `(${item.first_air_date.substring(0, 4)})`}
-                        </h2>
-                        <div className="text-white mt-4">
-                          <StarRating rating={item.vote_average} count={item.vote_count} />
-                        </div>
-                        <div className="text-white mt-2">
-                          {item.type === 'movie' ? `${item.runtime} mins` : `${item.number_of_seasons} Seasons`}
-                        </div>
-                        <div className="text-white mt-2">
-                          {item.type === 'movie'
-                            ? getMovieGenres(moviegenres,item.genre_ids).join(", ")
-                            : getTVGenres(tvgenres,item.genre_ids).join(", ")}
-                        </div>
-                        <p className="text-white mt-2 hidden lg:block">
-                          {truncateOverview(item.overview, 25)}
-                          {item.overview.split(" ").length > 25 && (
-                            <Link to={`/${item.type === 'movie' ? 'movies' : 'series'}/${item.id}`} className="text-red-600 hover:text-red-400">read more</Link>
-                          )}
-                        </p>
-                      </div>
-                      <div className="relative w-3/4 h-96 xl:h-[400px] 2xl:h-[500px]">
-                        <div className="absolute inset-0 bg-gradient-to-r from-black to-transparent" />
-                        <img
-                          className="object-cover w-full h-full"
-                          src={`https://image.tmdb.org/t/p/original${item.backdrop_path}`}
-                        />
-                      </div>
-                    </CardContent>
-                  </Link>
-                  <Button
-                    onClick={() => handleAddToWatchList({
-                      id: item.id,
-                      title: 'title' in item ? item.title : 'name' in item ? item.name : '',
-                      type: item.type
-                    })}
-                    className="absolute h-[30px] bottom-2 right-2 transform bg-zinc-800 px-3 py-1 text-white opacity-0 group-hover:opacity-100 transition-opacity duration-300"
-                  >
-                    <FaPlus className="mr-2" /> Add to Watchlist
-                  </Button>
-                </Card>
+              <CarouselItem
+                key={item.id}
+                className="group h-96 xl:h-[400px] 2xl:h-[500px] rounded-md"
+                onMouseEnter={() => handleMouseEnter(item.id)}
+                onMouseLeave={handleMouseLeave}
+              >
+                <HeroCarouselCard item={item} trailerMode={trailerMode && hoveredItem === item.id} />
               </CarouselItem>
             ))
           )}

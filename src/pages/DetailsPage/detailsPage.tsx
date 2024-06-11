@@ -82,8 +82,7 @@ export const DetailsPage: React.FC = () => {
         );
         const data = response.data;
         setItem({ ...data, type: isMovie ? 'movie' : 'show' });
-        
-        // Find trailer URL
+
         const trailers = data.videos.results.filter((video: any) => video.type === 'Trailer');
         if (trailers.length > 0) {
           setTrailerUrl(`https://www.youtube.com/watch?v=${trailers[0].key}`);
