@@ -124,7 +124,7 @@ export const HeroCarousel: React.FC<HeroCarouselProps> = ({ movieURL, tvURL }) =
 
   const HeroCarouselCardSkeleton = () => (
     <div className="flex">
-      <Skeleton className="h-[400px] w-[1080px] rounded-xl" />
+      <Skeleton className="h-[400px] w-[1100px]" />
     </div>
   );
 
@@ -162,7 +162,7 @@ export const HeroCarousel: React.FC<HeroCarouselProps> = ({ movieURL, tvURL }) =
             items.map((item) => (
               <CarouselItem
                 key={item.id}
-                className="group h-96 xl:h-[400px] 2xl:h-[500px] rounded-md"
+                className="group h-96 xl:h-[400px] 2xl:h-[500px] rounded-md "
                 onMouseEnter={() => handleMouseEnter(item.id)}
                 onMouseLeave={handleMouseLeave}
               >

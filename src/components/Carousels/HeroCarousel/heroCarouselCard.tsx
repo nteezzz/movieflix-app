@@ -7,6 +7,7 @@ import useGenres from "@/lib/hooks/useGenres";
 import { useWatchlist } from "@/lib/hooks/useWatchlist";
 import { FaPlus } from "react-icons/fa";
 import { Link } from "react-router-dom";
+import '../carousel.css'; // Ensure you create this CSS file and import it
 
 interface Movie {
   id: number;
@@ -40,7 +41,7 @@ interface Show {
 
 interface HeroCarouselCardProps {
   item: Movie | Show;
-  trailerMode: boolean; 
+  trailerMode: boolean;
 }
 
 export const HeroCarouselCard: React.FC<HeroCarouselCardProps> = ({ item, trailerMode }) => {
@@ -48,62 +49,67 @@ export const HeroCarouselCard: React.FC<HeroCarouselCardProps> = ({ item, traile
   const handleAddToWatchList = useWatchlist();
 
   return (
-    <Card className="flex flex-row bg-black border-zinc-900 mx-auto relative overflow-hidden rounded-md transform transition-transform hover:scale-105 hover:shadow-lg">
-      <Link to={`/${item.type === 'movie' ? 'movies' : 'series'}/${item.id}`} className="text-red-600 hover:text-red-400">
-        <CardContent className="flex flex-row">
-          <div className="flex flex-col justify-center bg-black bg-opacity-50 p-4 pl-10 rounded max-w-3xl text-left w-1/4 z-10 relative">
-            <h2 className="text-white font-semibold">
+    <div className="group card-container">
+      <Card className="relative mx-auto overflow-hidden rounded-md bg-black border-zinc-900 card-hover">
+        <Link to={`/${item.type === 'movie' ? 'movies' : 'series'}/${item.id}`} className="w-full flex flex-col md:flex-row text-red-600 hover:text-red-400">
+          <CardContent className="relative z-10 flex flex-col justify-center w-full p-4 pl-10 text-left bg-black bg-opacity-50 rounded md:w-1/3 max-w-3xl">
+            <h2 className="mb-2 text-lg font-semibold text-white md:text-xl">
               {item.type === 'movie' ? item.title : item.name}{" "}
               {item.type === 'movie'
                 ? `(${item.release_date.substring(0, 4)})`
                 : `(${item.first_air_date.substring(0, 4)})`}
             </h2>
-            <div className="text-white mt-4">
+            <div className="mt-4 text-white">
               <StarRating rating={item.vote_average} count={item.vote_count} />
             </div>
-            <div className="text-white mt-2">
+            <div className="mt-2 text-white">
               {item.type === 'movie' ? `${item.runtime} mins` : `${item.number_of_seasons} Seasons`}
             </div>
-            <div className="text-white mt-2">
+            <div className="mt-2 text-white">
               {item.type === 'movie'
                 ? getMovieGenres(moviegenres, item.genre_ids).join(", ")
                 : getTVGenres(tvgenres, item.genre_ids).join(", ")}
             </div>
-            <p className="text-white mt-2 hidden lg:block">
+            <p className="hidden mt-2 text-white lg:block">
               {truncateOverview(item.overview, 25)}
               {item.overview.split(" ").length > 25 && (
                 <Link to={`/${item.type === 'movie' ? 'movies' : 'series'}/${item.id}`} className="text-red-600 hover:text-red-400">read more</Link>
               )}
             </p>
-          </div>
-          <div className="relative w-3/4 h-96 xl:h-[400px] 2xl:h-[500px]">
-            <div className="absolute inset-0 bg-gradient-to-r from-black to-transparent" />
+          </CardContent>
+          <div className="relative w-full h-60 md:w-2/3 md:h-96 xl:h-[400px] 2xl:h-[500px]">
+            <div className="absolute inset-0 z-10 bg-gradient-to-r from-black to-transparent" />
             {trailerMode && item.trailer ? (
               <iframe
                 src={item.trailer}
-                allow="autoplay; encrypted-media"
+                allow="autoplay; fullscreen; encrypted-media"
+                allowFullScreen
                 title="Trailer"
-                className="rounded-md object-cover w-full h-full"
+                className="object-cover w-full h-full rounded-md"
               ></iframe>
             ) : (
               <img
                 className="object-cover w-full h-full"
                 src={`https://image.tmdb.org/t/p/original${item.backdrop_path}`}
+                alt={item.type === 'movie' ? item.title : item.name}
               />
             )}
           </div>
-        </CardContent>
-      </Link>
-      <Button
-        onClick={() => handleAddToWatchList({
-          id: item.id,
-          title: 'title' in item ? item.title : 'name' in item ? item.name : '',
-          type: item.type
-        })}
-        className="absolute h-[30px] bottom-2 right-2 transform bg-zinc-800 px-3 py-1 text-white opacity-0 group-hover:opacity-100 transition-opacity duration-300"
-      >
-        <FaPlus className="mr-2" /> Add to Watchlist
-      </Button>
-    </Card>
+        </Link>
+        <Button
+          onClick={(event) => {
+            event.stopPropagation();
+            handleAddToWatchList({
+              id: item.id,
+              title: 'title' in item ? item.title : 'name' in item ? item.name : '',
+              type: item.type
+            });
+          }}
+          className="absolute bottom-4 right-4 px-4 py-2 text-white bg-zinc-800 z-20"
+        >
+          <FaPlus className="mr-2" /> Add to Watchlist
+        </Button>
+      </Card>
+    </div>
   );
 };

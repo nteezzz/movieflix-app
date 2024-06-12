@@ -110,11 +110,7 @@ export const ListCarousel: React.FC<ListCarouselProps> = ({ title, redirect, URL
             Array.from({ length: itemsPerPage }).map((_, index) => (
               <CarouselItem key={index} style={{ flex: `0 0 ${100 / itemsPerPage}%` }}>
                 <div className="relative p-1 group card-container">
-                  <Card className="bg-zinc-950 border-zinc-900 card-hover">
-                    <CardContent className="flex aspect-auto items-center justify-center">
                       <Skeleton className="object-cover w-full h-full animate-pulse" />
-                    </CardContent>
-                  </Card>
                 </div>
               </CarouselItem>
             ))

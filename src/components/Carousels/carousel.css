@@ -1,5 +1,5 @@
 .card-container {
-    perspective: 1000px; /* Add perspective for 3D effect */
+    perspective: 1000px;
   }
   
   .card-hover {
@@ -7,7 +7,7 @@
   }
   
   .card-hover:hover {
-    transform: scale(1.03) rotateY(3deg); /* Slightly scale up and rotate the card */
+    transform: scale(1.03); 
     border-color: #db1000;
   }
   .custom-scrollbar::-webkit-scrollbar {

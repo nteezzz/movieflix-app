@@ -24,7 +24,7 @@ const App: React.FC = () => {
         <Route path="/series/:id" element={<DetailsPage/>}/>
         <Route path="/popular" element={<CategoryPage category='popular'/>} />
         <Route path="/topRated" element={<CategoryPage category='topRated'/>} />
-        <Route path="/nowPlaying" element={<CategoryPage category='nowPlaying'/>} />
+        <Route path="/nowShowing" element={<CategoryPage category='nowPlaying'/>} />
         <Route path="/myWatchlist" element={<MyWatchlist/>} />
       </Routes>
       <AuthComponent/>
