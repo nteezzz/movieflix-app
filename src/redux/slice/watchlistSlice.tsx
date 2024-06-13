@@ -83,7 +83,10 @@ const watchlistSlice = createSlice({
   initialState,
   reducers: {
     addItem(state, action: PayloadAction<WatchlistItem>) {
-      state.watchlist.push(action.payload);
+      const existingIndex = state.watchlist.findIndex(item => item.id === action.payload.id);
+      if (existingIndex === -1) {
+        state.watchlist.push(action.payload);
+      }
     },
     removeItem(state, action: PayloadAction<{ id: number }>) {
       state.watchlist = state.watchlist.filter(item => item.id !== action.payload.id);
@@ -101,7 +104,10 @@ const watchlistSlice = createSlice({
         state.watchlist = action.payload;
       })
       .addCase(addItemToFirestore.fulfilled, (state, action: PayloadAction<WatchlistItem>) => {
-        state.watchlist.push(action.payload);
+        const existingIndex = state.watchlist.findIndex(item => item.id === action.payload.id);
+        if (existingIndex === -1) {
+          state.watchlist.push(action.payload);
+        }
       })
       .addCase(removeItemFromFirestore.fulfilled, (state, action: PayloadAction<number>) => {
         state.watchlist = state.watchlist.filter(item => item.id !== action.payload);

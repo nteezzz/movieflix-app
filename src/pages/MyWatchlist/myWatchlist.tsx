@@ -93,45 +93,54 @@ const MyWatchlist: React.FC = () => {
   };
 
   return (
-    <div className="grid mx-12 grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4">
-      {details.map((item) => (
-        <Card key={item.id} className="group flex flex-col bg-black border-zinc-900 relative overflow-hidden transition-transform duration-300 transform hover:scale-105">
-          <Link to={`/${'title' in item ? 'movies' : 'series'}/${item.id}`} className="text-red-600 hover:text-red-400">
-            <div className="relative">
-              <img
-                className="object-cover h-full w-full rounded-md"
-                src={`https://image.tmdb.org/t/p/w500${item.poster_path}`}
-                alt={'title' in item ? item.title : item.name}
-              />
-              <CardContent className="flex flex-col p-4 absolute inset-0 z-10 bg-black bg-opacity-60 opacity-0 transform translate-y-full transition-all duration-300 group-hover:translate-y-0 group-hover:opacity-100">
-                <div>
-                  <h2 className="text-white text-left font-semibold">
-                    {'title' in item ? item.title : item.name}{" "}
-                    {'title' in item
-                      ? `(${new Date(item.release_date).getFullYear()})`
-                      : `(${new Date(item.first_air_date).getFullYear()})`}
-                  </h2>
-                  <div className="text-white text-left">
-                    <StarRating rating={item.vote_average} count={item.vote_count} />
-                  </div>
-                  <div className="text-white text-left">
-                    {'runtime' in item ? `${item.runtime} mins` : `${item.number_of_seasons} Seasons`}
-                  </div>
-                  <div className="text-white text-left">
-                    {getGenreNames(item.genres).join(", ")}
-                  </div>
+    <div>
+      {watchlist.length === 0 ? (
+       <div className="text-center text-gray-500 mt-8">
+       <p>Oops! Your watchlist seems to be as empty as a cinema hall during a math lecture! Let's fix that! Head back to the homepage and start adding some movie magic!<Link to="/" className="text-blue-500 hover:underline">#</Link></p>
+     </div>
+        
+      ) : (
+        <div className="grid mx-12 grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4">
+          {details.map((item) => (
+            <Card key={item.id} className="group flex flex-col bg-black border-zinc-900 relative overflow-hidden transition-transform duration-300 transform hover:scale-105">
+              <Link to={`/${'title' in item ? 'movies' : 'series'}/${item.id}`} className="text-red-600 hover:text-red-400">
+                <div className="relative">
+                  <img
+                    className="object-cover h-full w-full rounded-md"
+                    src={`https://image.tmdb.org/t/p/w500${item.poster_path}`}
+                    alt={'title' in item ? item.title : item.name}
+                  />
+                  <CardContent className="flex flex-col p-4 absolute inset-0 z-10 bg-black bg-opacity-60 opacity-0 transform translate-y-full transition-all duration-300 group-hover:translate-y-0 group-hover:opacity-100">
+                    <div>
+                      <h2 className="text-white text-left font-semibold">
+                        {'title' in item ? item.title : item.name}{" "}
+                        {'title' in item
+                          ? `(${new Date(item.release_date).getFullYear()})`
+                          : `(${new Date(item.first_air_date).getFullYear()})`}
+                      </h2>
+                      <div className="text-white text-left">
+                        <StarRating rating={item.vote_average} count={item.vote_count} />
+                      </div>
+                      <div className="text-white text-left">
+                        {'runtime' in item ? `${item.runtime} mins` : `${item.number_of_seasons} Seasons`}
+                      </div>
+                      <div className="text-white text-left">
+                        {getGenreNames(item.genres).join(", ")}
+                      </div>
+                    </div>
+                    <Button
+                      onClick={(e) => { e.preventDefault(); handleDelete({ id: item.id, title: 'title' in item ? item.title : item.name, type: 'title' in item ? 'movie' : 'show' }); }}
+                      className="absolute bottom-2 right-2 px-[8px] py-[8px] bg-custom-red text-white rounded-md hover:bg-red-800 transition-colors duration-300"
+                    >
+                      <FaTrash />
+                    </Button>
+                  </CardContent>
                 </div>
-                <Button
-                  onClick={(e) => { e.preventDefault(); handleDelete({ id: item.id, title: 'title' in item ? item.title : item.name, type: 'title' in item ? 'movie' : 'show' }); }}
-                  className="absolute bottom-2 right-2 px-[8px] py-[8px] bg-custom-red text-white rounded-md hover:bg-red-800 transition-colors duration-300"
-                >
-                  <FaTrash />
-                </Button>
-              </CardContent>
-            </div>
-          </Link>
-        </Card>
-      ))}
+              </Link>
+            </Card>
+          ))}
+        </div>
+      )}
     </div>
   );
 };

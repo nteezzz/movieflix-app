@@ -9,6 +9,9 @@ import { Button } from '@/components/ui/button';
 import { FaPlus } from 'react-icons/fa';
 import { FaPlay } from 'react-icons/fa';
 import { useWatchlist } from '@/lib/hooks/useWatchlist';
+import { useDispatch, useSelector } from 'react-redux';
+import { RootState, AppDispatch } from '@/redux/app/store'; // Import AppDispatch
+import { trackActivity, updateActivityInFirestore } from '@/redux/slice/activitySlice';
 
 interface Genre {
   id: number;
@@ -72,16 +75,31 @@ export const DetailsPage: React.FC = () => {
   const [item, setItem] = useState<Movie | Show | null>(null);
   const [trailerUrl, setTrailerUrl] = useState<string | null>(null);
   const isMovie = window.location.pathname.includes('/movies/');
-  const handleAddToWatchList=useWatchlist();
+  const handleAddToWatchList = useWatchlist();
+  const dispatch = useDispatch<AppDispatch>(); // Type the dispatch function
+  const uid = useSelector((state: RootState) => state.auth.uid);
+  const activity = useSelector((state: RootState) => state.activity);
+  const [tracked, setTracked] = useState<{ [key: string]: boolean }>({});
 
   useEffect(() => {
     const fetchDetails = async () => {
+      if (!id) return;  // Ensure id is defined
+
       try {
         const response = await axios.get(
           `https://api.themoviedb.org/3/${isMovie ? 'movie' : 'tv'}/${id}?api_key=${API_KEY}&append_to_response=credits,videos`
         );
         const data = response.data;
         setItem({ ...data, type: isMovie ? 'movie' : 'show' });
+
+        if (uid && data.genres.length > 0 && !tracked[id]) {
+          console.log("Dispatching trackActivity and updateActivityInFirestore actions");
+          data.genres.forEach((genre: Genre) => {
+            dispatch(trackActivity({ type: isMovie ? 'movie' : 'tv', genre }));
+          });
+          dispatch(updateActivityInFirestore({ userId: uid, activity }));
+          setTracked((prevTracked) => ({ ...prevTracked, [id]: true }));
+        }
 
         const trailers = data.videos.results.filter((video: any) => video.type === 'Trailer');
         if (trailers.length > 0) {
@@ -93,7 +111,7 @@ export const DetailsPage: React.FC = () => {
     };
 
     fetchDetails();
-  }, [id, isMovie]);
+  }, [id, isMovie, uid, dispatch, activity, tracked]);
 
   const getGenreNames = (genres: Genre[]): string[] => {
     return genres.map((genre) => genre.name);
@@ -103,7 +121,6 @@ export const DetailsPage: React.FC = () => {
     const member = crew.find((person) => person.job === job);
     return member ? member.name : 'Unknown';
   };
-
 
   const handlePlayTrailer = () => {
     if (trailerUrl) {
@@ -124,7 +141,6 @@ export const DetailsPage: React.FC = () => {
             alt={item.type === 'movie' ? item.title : item.name}
             className="object-cover h-full w-full md:w-1/3 "
           />
-          
           <div className="p-4 w-full text-left md:w-2/3">
             <h1 className="text-white font-bold text-2xl">
               {item.type === 'movie' ? item.title : item.name}{" "}
@@ -135,7 +151,6 @@ export const DetailsPage: React.FC = () => {
             <div className="text-white mt-2">
               <StarRating rating={item.vote_average} count={item.vote_count} />
             </div>
-            
             <div className="text-white mt-2">
               {item.type === 'movie' ? `${item.runtime} mins` : `${item.number_of_seasons} Seasons`}
             </div>

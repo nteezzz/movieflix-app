@@ -19,6 +19,7 @@ import { Button } from '../ui/button';
 import { Input } from '../ui/input';
 import { toast } from 'sonner';
 import { useAuthDialog } from './authContext';
+import { fetchActivity } from '@/redux/slice/activitySlice';
 
 
 const AuthComponent: React.FC = () => {
@@ -35,6 +36,7 @@ const AuthComponent: React.FC = () => {
         if (email) {
           dispatch(setLogin({ uid, email }));
           dispatch(fetchWatchlist(uid));
+          dispatch(fetchActivity(uid));
         }
       } else {
         dispatch(setLogout());
@@ -55,6 +57,7 @@ const AuthComponent: React.FC = () => {
       if (email && uid) {
         dispatch(setLogin({ uid, email }));
         dispatch(fetchWatchlist(uid));
+        dispatch(fetchActivity(uid));
         setDialogOpen(false); 
       }
     } catch (error: any) {
@@ -79,6 +82,7 @@ const AuthComponent: React.FC = () => {
       if (userEmail && uid) {
         dispatch(setLogin({ uid, email: userEmail }));
         dispatch(fetchWatchlist(uid));
+        dispatch(fetchActivity(uid));
         setDialogOpen(false); 
       }
     } catch (error: any) {

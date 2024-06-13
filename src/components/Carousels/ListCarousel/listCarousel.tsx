@@ -118,7 +118,7 @@ export const ListCarousel: React.FC<ListCarouselProps> = ({ title, redirect, URL
             items.map((item) => (
               <CarouselItem key={item.id} style={{ flex: `0 0 ${100 / itemsPerPage}%` }}>
                 <div className="relative p-1 group card-container">
-                  <Link to={`/${item.media_type === 'movie' ? 'movies' : 'series'}/${item.id}`}>
+                  <Link to={`/${'title' in item ?'movies' : 'series'}/${item.id}`}>
                     <Card className="bg-zinc-950 border-zinc-900 card-hover">
                       <CardContent className="flex aspect-auto items-center justify-center">
                         <img
@@ -126,6 +126,7 @@ export const ListCarousel: React.FC<ListCarouselProps> = ({ title, redirect, URL
                           alt={item.title || item.name}
                           className="object-cover h-full w-full rounded-md"
                         />
+                        <div>{item.media_type}</div>
                       </CardContent>
                     </Card>
                   </Link>
