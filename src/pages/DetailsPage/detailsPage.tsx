@@ -11,7 +11,7 @@ import { FaPlay } from 'react-icons/fa';
 import { useWatchlist } from '@/lib/hooks/useWatchlist';
 import { useDispatch, useSelector } from 'react-redux';
 import { RootState, AppDispatch } from '@/redux/app/store'; // Import AppDispatch
-import { trackActivity, updateActivityInFirestore } from '@/redux/slice/activitySlice';
+import {  fetchActivity, trackActivity, updateActivityInFirestore } from '@/redux/slice/activitySlice';
 
 interface Genre {
   id: number;
@@ -76,15 +76,19 @@ export const DetailsPage: React.FC = () => {
   const [trailerUrl, setTrailerUrl] = useState<string | null>(null);
   const isMovie = window.location.pathname.includes('/movies/');
   const handleAddToWatchList = useWatchlist();
-  const dispatch = useDispatch<AppDispatch>(); // Type the dispatch function
+  const dispatch = useDispatch<AppDispatch>(); 
   const uid = useSelector((state: RootState) => state.auth.uid);
   const activity = useSelector((state: RootState) => state.activity);
   const [tracked, setTracked] = useState<{ [key: string]: boolean }>({});
+  useEffect(() => {
+    if (uid) {
+      dispatch(fetchActivity(uid));
+    }
+  }, []);
 
   useEffect(() => {
     const fetchDetails = async () => {
-      if (!id) return;  // Ensure id is defined
-
+      if (!id) return;  
       try {
         const response = await axios.get(
           `https://api.themoviedb.org/3/${isMovie ? 'movie' : 'tv'}/${id}?api_key=${API_KEY}&append_to_response=credits,videos`

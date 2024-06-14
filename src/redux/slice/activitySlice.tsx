@@ -3,7 +3,7 @@ import { db } from '../../config/firebase-config';
 import { doc, getDoc, updateDoc } from 'firebase/firestore';
 
 
-interface Genre {
+export interface Genre {
   id: number;
   name: string;
   visits: number;
@@ -24,6 +24,23 @@ const initialState: ActivityState = {
   tvGenre: [],
 };
 
+// export const fetchActivity = createAsyncThunk(
+//   'activity/fetchActivity',
+//   async (userId: string, { rejectWithValue }) => {
+//     try {
+//       const docRef = doc(db, 'users', userId);
+//       const docSnap = await getDoc(docRef);
+
+//       if (docSnap.exists()) {
+//         return docSnap.data().activity || { movieGenre: [], tvGenre: [] };
+//       } else {
+//         return { movieGenre: [], tvGenre: [] };
+//       }
+//     } catch (error: any) {
+//       return rejectWithValue(error.message);
+//     }
+//   }
+// );
 export const fetchActivity = createAsyncThunk(
   'activity/fetchActivity',
   async (userId: string, { rejectWithValue }) => {
@@ -32,7 +49,13 @@ export const fetchActivity = createAsyncThunk(
       const docSnap = await getDoc(docRef);
 
       if (docSnap.exists()) {
-        return docSnap.data().activity || { movieGenre: [], tvGenre: [] };
+        const activityData = docSnap.data().activity || { movieGenre: [], tvGenre: [] };
+
+        // Sort genres by visits
+        activityData.movieGenre.sort((a:Genre, b:Genre) => b.visits - a.visits);
+        activityData.tvGenre.sort((a:Genre, b:Genre) => b.visits - a.visits);
+
+        return activityData;
       } else {
         return { movieGenre: [], tvGenre: [] };
       }
@@ -45,6 +68,7 @@ export const fetchActivity = createAsyncThunk(
 export const updateActivityInFirestore = createAsyncThunk(
   'activity/updateActivityInFirestore',
   async ({ userId, activity }: { userId: string; activity: ActivityState }, { rejectWithValue }) => {
+    
     try {
       const docRef = doc(db, 'users', userId);
       await updateDoc(docRef, {
@@ -73,17 +97,17 @@ const activitySlice = createSlice({
       }
       
     },
-    pickTopVisitedGenres: (state, action: PayloadAction<{ type: 'movie' | 'tv'; topN: number }>) => {
-      const { type, topN } = action.payload;
-      const genreArray = type === 'movie' ? state.movieGenre : state.tvGenre;
-      const topGenres = genreArray.sort((a, b) => b.visits - a.visits).slice(0, topN);
+    // pickTopVisitedGenres: (state, action: PayloadAction<{ type: 'movie' | 'tv'; topN: number }>) => {
+    //   const { type, topN } = action.payload;
+    //   const genreArray = type === 'movie' ? state.movieGenre : state.tvGenre;
+    //   const topGenres = genreArray.sort((a, b) => b.visits - a.visits).slice(0, topN);
 
-      if (type === 'movie') {
-        state.movieGenre = topGenres;
-      } else {
-        state.tvGenre = topGenres;
-      }
-    },
+    //   if (type === 'movie') {
+    //     state.movieGenre = topGenres;
+    //   } else {
+    //     state.tvGenre = topGenres;
+    //   }
+    // },
     clearActivity: (state) => {
       state.movieGenre = [];
       state.tvGenre = [];
@@ -102,5 +126,5 @@ const activitySlice = createSlice({
   }
 });
 
-export const { trackActivity, pickTopVisitedGenres, clearActivity } = activitySlice.actions;
+export const { trackActivity, clearActivity } = activitySlice.actions;
 export default activitySlice.reducer;

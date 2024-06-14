@@ -21,6 +21,7 @@ import { setLogout } from '@/redux/slice/authSlice';
 import { auth} from '../../config/firebase-config';
 
 
+
 export const NavMenu: React.FC = () => {
   const uid = useSelector((state: RootState) => state.auth.uid);
   const mail = useSelector((state: RootState) => state.auth.email);
@@ -41,6 +42,12 @@ export const NavMenu: React.FC = () => {
       });
     }
   };
+  // const handleClearActivity=()=>{
+  //   if(uid){
+  //   dispatch(clearActivity());
+  //   dispatch(updateActivityInFirestore({ userId: uid, activity }))
+  //   }
+  // }
 
   return (
     <Sheet>
@@ -85,11 +92,13 @@ export const NavMenu: React.FC = () => {
                     <Link to="/nowShowing" className="text-white hover:text-gray-300">Now Showing</Link>
                   </SheetClose>
                 </li>
-                {uid&&(<li>
+                {uid&&(<>
+                  <li>
                   <SheetClose asChild>
                     <Link to="/myWatchlist" className="text-white hover:text-gray-300">My Watchlist</Link>
                   </SheetClose>
-                </li>)}
+                  </li>
+                </>)}
               </ul>
             </nav>
           </SheetDescription>

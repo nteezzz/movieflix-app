@@ -126,7 +126,6 @@ export const ListCarousel: React.FC<ListCarouselProps> = ({ title, redirect, URL
                           alt={item.title || item.name}
                           className="object-cover h-full w-full rounded-md"
                         />
-                        <div>{item.media_type}</div>
                       </CardContent>
                     </Card>
                   </Link>
