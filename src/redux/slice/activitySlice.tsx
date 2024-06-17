@@ -2,17 +2,16 @@ import { createSlice, PayloadAction, createAsyncThunk } from '@reduxjs/toolkit';
 import { db } from '../../config/firebase-config';
 import { doc, getDoc, updateDoc } from 'firebase/firestore';
 
-
 export interface Genre {
   id: number;
   name: string;
   visits: number;
 }
+
 interface genre {
-    id: number;
-    name: string;
-    
-  }
+  id: number;
+  name: string;
+}
 
 interface ActivityState {
   movieGenre: Genre[];
@@ -24,37 +23,16 @@ const initialState: ActivityState = {
   tvGenre: [],
 };
 
-// export const fetchActivity = createAsyncThunk(
-//   'activity/fetchActivity',
-//   async (userId: string, { rejectWithValue }) => {
-//     try {
-//       const docRef = doc(db, 'users', userId);
-//       const docSnap = await getDoc(docRef);
-
-//       if (docSnap.exists()) {
-//         return docSnap.data().activity || { movieGenre: [], tvGenre: [] };
-//       } else {
-//         return { movieGenre: [], tvGenre: [] };
-//       }
-//     } catch (error: any) {
-//       return rejectWithValue(error.message);
-//     }
-//   }
-// );
 export const fetchActivity = createAsyncThunk(
   'activity/fetchActivity',
   async (userId: string, { rejectWithValue }) => {
     try {
       const docRef = doc(db, 'users', userId);
       const docSnap = await getDoc(docRef);
-
       if (docSnap.exists()) {
         const activityData = docSnap.data().activity || { movieGenre: [], tvGenre: [] };
-
-        // Sort genres by visits
-        activityData.movieGenre.sort((a:Genre, b:Genre) => b.visits - a.visits);
-        activityData.tvGenre.sort((a:Genre, b:Genre) => b.visits - a.visits);
-
+        activityData.movieGenre.sort((a: Genre, b: Genre) => b.visits - a.visits);
+        activityData.tvGenre.sort((a: Genre, b: Genre) => b.visits - a.visits);
         return activityData;
       } else {
         return { movieGenre: [], tvGenre: [] };
@@ -65,19 +43,38 @@ export const fetchActivity = createAsyncThunk(
   }
 );
 
-export const updateActivityInFirestore = createAsyncThunk(
-  'activity/updateActivityInFirestore',
-  async ({ userId, activity }: { userId: string; activity: ActivityState }, { rejectWithValue }) => {
-    
+// export const updateActivityInFirestore = createAsyncThunk(
+//   'activity/updateActivityInFirestore',
+//   async ({ userId, activity }: { userId: string; activity: ActivityState }, { rejectWithValue }) => {
+//     try {
+//       const docRef = doc(db, 'users', userId);
+//       await updateDoc(docRef, {
+//         activity
+//       });
+//       return activity;
+//     } catch (error: any) {
+//       return rejectWithValue(error.message);
+//     }
+//   }
+// );
+
+export const trackActivityInFirestore = createAsyncThunk(
+  'activity/trackActivityInFirestore',
+  async ({ userId, type, genre }: { userId: string; type: 'movie' | 'tv'; genre: genre }, { dispatch, getState, rejectWithValue }) => {
     try {
+      dispatch(trackActivity({ type, genre }));
+      const state = getState() as { activity: ActivityState };
+      const updatedActivity = state.activity;
       const docRef = doc(db, 'users', userId);
-      await updateDoc(docRef, {
-        activity
-      });
-      return activity;
+          await updateDoc(docRef, {
+            activity: updatedActivity
+          });
+
+      return updatedActivity;
     } catch (error: any) {
       return rejectWithValue(error.message);
     }
+    
   }
 );
 
@@ -95,19 +92,7 @@ const activitySlice = createSlice({
       } else {
         genreArray.push({ ...genre, visits: 1 });
       }
-      
     },
-    // pickTopVisitedGenres: (state, action: PayloadAction<{ type: 'movie' | 'tv'; topN: number }>) => {
-    //   const { type, topN } = action.payload;
-    //   const genreArray = type === 'movie' ? state.movieGenre : state.tvGenre;
-    //   const topGenres = genreArray.sort((a, b) => b.visits - a.visits).slice(0, topN);
-
-    //   if (type === 'movie') {
-    //     state.movieGenre = topGenres;
-    //   } else {
-    //     state.tvGenre = topGenres;
-    //   }
-    // },
     clearActivity: (state) => {
       state.movieGenre = [];
       state.tvGenre = [];
@@ -119,7 +104,11 @@ const activitySlice = createSlice({
         state.movieGenre = action.payload.movieGenre;
         state.tvGenre = action.payload.tvGenre;
       })
-      .addCase(updateActivityInFirestore.fulfilled, (state, action: PayloadAction<ActivityState>) => {
+      // .addCase(updateActivityInFirestore.fulfilled, (state, action: PayloadAction<ActivityState>) => {
+      //   state.movieGenre = action.payload.movieGenre;
+      //   state.tvGenre = action.payload.tvGenre;
+      // })
+      .addCase(trackActivityInFirestore.fulfilled, (state, action: PayloadAction<ActivityState>) => {
         state.movieGenre = action.payload.movieGenre;
         state.tvGenre = action.payload.tvGenre;
       });

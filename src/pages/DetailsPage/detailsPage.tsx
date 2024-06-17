@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { useParams } from 'react-router-dom';
 import axios from 'axios';
 import { Card, CardContent } from "@/components/ui/card";
@@ -6,12 +6,11 @@ import StarRating from "../../components/StarRating/starRating";
 import { API_KEY } from '@/config';
 import { CastCarousel } from '../../components/Carousels/CastCarousel/castCarousel';
 import { Button } from '@/components/ui/button';
-import { FaPlus } from 'react-icons/fa';
-import { FaPlay } from 'react-icons/fa';
+import { FaPlus, FaPlay } from 'react-icons/fa';
 import { useWatchlist } from '@/lib/hooks/useWatchlist';
 import { useDispatch, useSelector } from 'react-redux';
-import { RootState, AppDispatch } from '@/redux/app/store'; // Import AppDispatch
-import {  fetchActivity, trackActivity, updateActivityInFirestore } from '@/redux/slice/activitySlice';
+import { RootState, AppDispatch } from '@/redux/app/store';
+import { fetchActivity, trackActivityInFirestore } from '@/redux/slice/activitySlice';
 
 interface Genre {
   id: number;
@@ -78,33 +77,33 @@ export const DetailsPage: React.FC = () => {
   const handleAddToWatchList = useWatchlist();
   const dispatch = useDispatch<AppDispatch>(); 
   const uid = useSelector((state: RootState) => state.auth.uid);
-  const activity = useSelector((state: RootState) => state.activity);
-  const [tracked, setTracked] = useState<{ [key: string]: boolean }>({});
+  const trackedGenresRef = useRef<Set<number>>(new Set());
+
   useEffect(() => {
     if (uid) {
       dispatch(fetchActivity(uid));
     }
-  }, []);
+  }, [uid, dispatch]);
 
   useEffect(() => {
     const fetchDetails = async () => {
-      if (!id) return;  
+      if (!id) return;
       try {
         const response = await axios.get(
           `https://api.themoviedb.org/3/${isMovie ? 'movie' : 'tv'}/${id}?api_key=${API_KEY}&append_to_response=credits,videos`
         );
         const data = response.data;
-        setItem({ ...data, type: isMovie ? 'movie' : 'show' });
+        setItem({ ...data, type: isMovie ? 'movie' : 'tv' });
 
-        if (uid && data.genres.length > 0 && !tracked[id]) {
-          console.log("Dispatching trackActivity and updateActivityInFirestore actions");
-          data.genres.forEach((genre: Genre) => {
-            dispatch(trackActivity({ type: isMovie ? 'movie' : 'tv', genre }));
-          });
-          dispatch(updateActivityInFirestore({ userId: uid, activity }));
-          setTracked((prevTracked) => ({ ...prevTracked, [id]: true }));
+        if (uid && data.genres.length > 0) {
+          const untrackedGenres = data.genres.filter((genre: Genre) => !trackedGenresRef.current.has(genre.id));
+          if (untrackedGenres.length > 0) {
+            untrackedGenres.forEach((genre: Genre) => {
+              dispatch(trackActivityInFirestore({ userId: uid, type: isMovie ? 'movie' : 'tv', genre: genre }));
+              trackedGenresRef.current.add(genre.id);
+            });
+          }
         }
-
         const trailers = data.videos.results.filter((video: any) => video.type === 'Trailer');
         if (trailers.length > 0) {
           setTrailerUrl(`https://www.youtube.com/watch?v=${trailers[0].key}`);
@@ -115,11 +114,9 @@ export const DetailsPage: React.FC = () => {
     };
 
     fetchDetails();
-  }, [id, isMovie, uid, dispatch, activity, tracked]);
+  }, [id, isMovie, uid, dispatch]);
 
-  const getGenreNames = (genres: Genre[]): string[] => {
-    return genres.map((genre) => genre.name);
-  };
+  const getGenreNames = (genres: Genre[]): string[] => genres.map((genre) => genre.name);
 
   const getCrewMember = (crew: Crew[], job: string): string => {
     const member = crew.find((person) => person.job === job);
