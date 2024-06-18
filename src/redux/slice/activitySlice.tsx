@@ -43,16 +43,50 @@ export const fetchActivity = createAsyncThunk(
   }
 );
 
-// export const updateActivityInFirestore = createAsyncThunk(
-//   'activity/updateActivityInFirestore',
-//   async ({ userId, activity }: { userId: string; activity: ActivityState }, { rejectWithValue }) => {
+
+// export const trackActivityInFirestore = createAsyncThunk(
+//   'activity/trackActivityInFirestore',
+//   async (
+//     { userId, type, genre }: { userId: string; type: 'movie' | 'tv'; genre: genre },
+//     { rejectWithValue }
+//   ) => {
 //     try {
 //       const docRef = doc(db, 'users', userId);
-//       await updateDoc(docRef, {
-//         activity
-//       });
-//       return activity;
+//       const docSnap = await getDoc(docRef);
+//       let updatedActivity: ActivityState;
+//       if (docSnap.exists()) {
+//         updatedActivity = (docSnap.data() as { activity: ActivityState }).activity || { movieGenre: [], tvGenre: [] };
+//       } else {
+//         updatedActivity = { movieGenre: [], tvGenre: [] };
+//       }
+
+//       if (type === 'movie') {
+//         const existingGenre = updatedActivity.movieGenre.find(g => g.id === genre.id);
+//         console.log(existingGenre)
+//         if (existingGenre) {
+//           console.log(existingGenre.name)
+//           console.log(existingGenre.visits)
+//           existingGenre.visits+= 1;
+//           console.log(existingGenre.visits)
+//         } else {
+//           const newGenre = { id:genre.id, name:genre.name, visits:1 };
+//           console.log(newGenre.name)
+//           console.log(newGenre.visits)
+//           updatedActivity.movieGenre.push(newGenre);
+//         }
+//       } else {
+//         const existingGenre = updatedActivity.tvGenre.find(g => g.id === genre.id);
+//         if (existingGenre) {
+//           existingGenre.visits += 1;
+//         } else {
+//           const newGenre = { ...genre, visits: 1 };
+//           updatedActivity.tvGenre.push(newGenre);
+//         }
+//       }
+//       await updateDoc(docRef, { activity: updatedActivity });
+//       return updatedActivity;
 //     } catch (error: any) {
+//       console.error('Error in trackActivityInFirestore:', error);
 //       return rejectWithValue(error.message);
 //     }
 //   }
@@ -104,10 +138,6 @@ const activitySlice = createSlice({
         state.movieGenre = action.payload.movieGenre;
         state.tvGenre = action.payload.tvGenre;
       })
-      // .addCase(updateActivityInFirestore.fulfilled, (state, action: PayloadAction<ActivityState>) => {
-      //   state.movieGenre = action.payload.movieGenre;
-      //   state.tvGenre = action.payload.tvGenre;
-      // })
       .addCase(trackActivityInFirestore.fulfilled, (state, action: PayloadAction<ActivityState>) => {
         state.movieGenre = action.payload.movieGenre;
         state.tvGenre = action.payload.tvGenre;

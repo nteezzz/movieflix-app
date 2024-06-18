@@ -78,12 +78,11 @@ export const DetailsPage: React.FC = () => {
   const dispatch = useDispatch<AppDispatch>(); 
   const uid = useSelector((state: RootState) => state.auth.uid);
   const trackedGenresRef = useRef<Set<number>>(new Set());
-
-  useEffect(() => {
-    if (uid) {
+  useEffect(()=>{
+    if(uid){
       dispatch(fetchActivity(uid));
     }
-  }, [uid, dispatch]);
+  },[uid, dispatch])
 
   useEffect(() => {
     const fetchDetails = async () => {
@@ -99,6 +98,7 @@ export const DetailsPage: React.FC = () => {
           const untrackedGenres = data.genres.filter((genre: Genre) => !trackedGenresRef.current.has(genre.id));
           if (untrackedGenres.length > 0) {
             untrackedGenres.forEach((genre: Genre) => {
+              console.log(genre)
               dispatch(trackActivityInFirestore({ userId: uid, type: isMovie ? 'movie' : 'tv', genre: genre }));
               trackedGenresRef.current.add(genre.id);
             });

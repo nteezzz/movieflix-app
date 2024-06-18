@@ -8,7 +8,7 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import axios from "axios";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { FaPlus, FaSearch, FaTimes } from "react-icons/fa";
 import { Input } from "../ui/input";
 import { API_KEY } from "@/config";
@@ -20,6 +20,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { AppDispatch, RootState } from "@/redux/app/store";
 import { fetchActivity } from "@/redux/slice/activitySlice";
 import { Genre } from "@/redux/slice/activitySlice";
+import debounce from 'lodash.debounce';
 
 interface Media {
   id: number;
@@ -38,7 +39,9 @@ export const SearchComponent: React.FC = () => {
   const [dialogOpen, setDialogOpen] = useState<boolean>(false);
   const [topMovies, setTopMovies] = useState<Media[]>([]);
   const [topSeries, setTopSeries] = useState<Media[]>([]);
-  const dispatch = useDispatch<AppDispatch>(); 
+  const [error, setError] = useState<string | null>(null);
+
+  const dispatch = useDispatch<AppDispatch>();
   const handleAddToWatchlist = useWatchlist();
   const uid = useSelector((state: RootState) => state.auth.uid);
   const movieGenre = useSelector((state: RootState) => state.activity.movieGenre);
@@ -48,28 +51,22 @@ export const SearchComponent: React.FC = () => {
     if (uid) {
       dispatch(fetchActivity(uid));
     }
-  }, [uid, dispatch]);
-
-  useEffect(() => {
     const fetchMoviesBasedOnGenres = async (genres: Genre[], type: 'movie' | 'tv') => {
       try {
         const genrePromises = genres.map(genre =>
           axios.get(`https://api.themoviedb.org/3/discover/${type}?api_key=${API_KEY}&with_genres=${genre.id}`)
         );
         const genreResults = await Promise.all(genrePromises);
-        //const media = genreResults.flatMap(response => response.data.results);
         const uniqueMediaIds = new Set<number>();
 
-    // Flatten and filter duplicates
-    const media = genreResults.flatMap(response => response.data.results)
-                             .filter(item => {
-                               if (!uniqueMediaIds.has(item.id)) {
-                                 uniqueMediaIds.add(item.id);
-                                 return true;
-                               }
-                               return false;
-                             });
-
+        const media = genreResults.flatMap(response => response.data.results)
+          .filter(item => {
+            if (!uniqueMediaIds.has(item.id)) {
+              uniqueMediaIds.add(item.id);
+              return true;
+            }
+            return false;
+          });
         if (type === 'movie') {
           setTopMovies(media);
         } else {
@@ -77,6 +74,7 @@ export const SearchComponent: React.FC = () => {
         }
       } catch (error) {
         console.error(`Error fetching ${type}s based on genres:`, error);
+        setError('Failed to fetch curated content.');
       }
     };
 
@@ -89,7 +87,7 @@ export const SearchComponent: React.FC = () => {
       const topTVGenres = tvGenre.slice(0, 3);
       fetchMoviesBasedOnGenres(topTVGenres, 'tv');
     }
-  }, [movieGenre, tvGenre]);
+  }, [uid, movieGenre, tvGenre, dispatch]);
 
   useEffect(() => {
     const fetchTrendingMovies = async () => {
@@ -98,37 +96,54 @@ export const SearchComponent: React.FC = () => {
         setTrendingMovies(response.data.results);
       } catch (error) {
         console.error('Error fetching trending movies:', error);
+        setError('Failed to fetch trending movies.');
       }
     };
 
     fetchTrendingMovies();
   }, []);
 
-  const handleSearch = async () => {
-    setDisplayQuery(query);
-    if (!query.trim()) {
-      setResults([]);
-      setLoading(false);
-      return;
-    }
+  const debouncedSearch = useCallback(
+    debounce(async (searchQuery: string) => {
+      setDisplayQuery(searchQuery);
+      if (!searchQuery.trim()) {
+        setResults([]);
+        setLoading(false);
+        return;
+      }
 
-    setLoading(true);
-    try {
-      const response = await axios.get(`https://api.themoviedb.org/3/search/multi?api_key=${API_KEY}&query=${query}`);
-      setResults(response.data.results);
-    } catch (error) {
-      console.error('Error searching movies:', error);
-      setResults([]);
-    } finally {
-      setLoading(false);
-    }
+      setLoading(true);
+      try {
+        const response = await axios.get(`https://api.themoviedb.org/3/search/multi?api_key=${API_KEY}&query=${searchQuery}`);
+        setResults(response.data.results);
+      } catch (error) {
+        console.error('Error searching movies:', error);
+        setResults([]);
+        setError('Failed to search.');
+      } finally {
+        setLoading(false);
+      }
+    }, 500),
+    []
+  );
+
+  const handleSearch = () => {
+    debouncedSearch(query);
+  };
+
+  const handleCloseDialog = () => {
+    setDialogOpen(false);
+    setQuery('');
+    setResults([]);
+    setError(null);
+    setDisplayQuery('');
   };
 
   const renderMovies = (movies: Media[]) => (
     <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
       {movies.map((item) => (
         <div key={item.id} className="relative p-1 group card-container">
-          <Link to={`/${item.media_type === 'movie' ? 'movies' : 'series'}/${item.id}`} onClick={() => setDialogOpen(false)}>
+          <Link to={`/${item.media_type === 'movie' ? 'movies' : 'series'}/${item.id}`} onClick={handleCloseDialog}>
             <Card className="bg-zinc-950 border-zinc-900 card-hover transition-transform transform hover:scale-105">
               <CardContent className="flex aspect-auto items-center justify-center">
                 <img
@@ -174,12 +189,13 @@ export const SearchComponent: React.FC = () => {
             <Button onClick={handleSearch} className="ml-2 bg-zinc-950 hover:bg-zinc-900 transition-colors">
               <FaSearch />
             </Button>
-            <Button onClick={() => setDialogOpen(false)} className="ml-2 bg-zinc-950 hover:bg-zinc-900 transition-colors">
+            <Button onClick={handleCloseDialog} className="ml-2 bg-zinc-950 hover:bg-zinc-900 transition-colors">
               <FaTimes />
             </Button>
           </div>
         </DialogHeader>
         <div className="mt-4">
+          {error && <p className="text-red-500">{error}</p>}
           {loading && (
             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
               {Array(10).fill(0).map((_, index) => (
@@ -192,7 +208,6 @@ export const SearchComponent: React.FC = () => {
 
           {!loading && results.length === 0 && query.trim() === '' && (
             <>
-              
               {uid ? (
                 <>
                   {topMovies.length > 0 && (
@@ -210,8 +225,8 @@ export const SearchComponent: React.FC = () => {
                 </>
               ) : (
                 <>
-                <p className="text-white text-lg">Trending Now</p>
-                {renderMovies(trendingMovies)}
+                  <p className="text-white text-lg">Trending Now</p>
+                  {renderMovies(trendingMovies)}
                 </>
               )}
             </>
